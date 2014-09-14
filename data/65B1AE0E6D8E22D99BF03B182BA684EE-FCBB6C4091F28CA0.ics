@@ -1,0 +1,46 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Roundcube//Roundcube libcalendaring 1.1-git//Sabre//Sabre VObject
+  2.1.3//EN
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:65B1AE0E6D8E22D99BF03B182BA684EE-FCBB6C4091F28CA0
+DTSTAMP;VALUE=DATE-TIME:20140729T140042Z
+CREATED;VALUE=DATE-TIME:20140728T155521Z
+LAST-MODIFIED;VALUE=DATE-TIME:20140729T140022Z
+DTSTART;VALUE=DATE-TIME;TZID=Europe/Berlin:20140730T160000
+DTEND;VALUE=DATE-TIME;TZID=Europe/Berlin:20140730T180000
+SUMMARY:Bonnie Showcase Series
+LOCATION:Private meeting room
+DESCRIPTION:In this showcase we'll demonstrate the event history provided b
+ y the Bonnie service.\n\nDuring the 3 events, you'll gain a deeper insight
+  into the architecture and design of Bonnie as well as the public API and 
+ how clients can get historic data from Kolab groupware objects.
+SEQUENCE:1
+RRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=3;BYDAY=WE
+CATEGORIES:meeting
+TRANSP:OPAQUE
+PRIORITY:1
+STATUS:CONFIRMED
+CLASS:PUBLIC
+ATTENDEE;CN="Dlnmddqlxh, Qmzuu";PARTSTAT=NEEDS-ACTION;ROLE=REQ-PARTICIPANT;
+ CUTYPE=INDIVIDUAL;RSVP=TRUE:mailto:qmzuu.dlnmddqlxh@example.org
+ATTENDEE;CN="Doe, John";PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT;CUTYPE=INDIV
+ IDUAL;RSVP=TRUE:mailto:john.doe@example.org
+ATTENDEE;CN="Idwnxeeajl, Tlzmn";PARTSTAT=NEEDS-ACTION;ROLE=REQ-PARTICIPANT;
+ CUTYPE=INDIVIDUAL;RSVP=TRUE:mailto:tlzmn.idwnxeeajl@example.org
+ORGANIZER;CN=Thomas:mailto:thomas.bruederli@example.org
+URL:http://kolab.org/news/2014/07/22/new-features-e-mail-tags-and-resource-
+ management
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-PT2H
+DESCRIPTION:Event reminder
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-P1D
+DESCRIPTION:Event reminder
+END:VALARM
+END:VEVENT
+END:VCALENDAR

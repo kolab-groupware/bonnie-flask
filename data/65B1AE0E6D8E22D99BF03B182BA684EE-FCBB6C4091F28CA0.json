@@ -1,0 +1,40 @@
+{
+    "uid": "65B1AE0E6D8E22D99BF03B182BA684EE-FCBB6C4091F28CA0",
+    "changes": [
+        {
+            "date": "2014-07-28T15:55:21Z",
+            "mailbox": "user/thomas/Calendar@example.org",
+            "op": "APPEND",
+            "rev": 1,
+            "user": "Thomas B. <thomas@example.org>"
+        },
+        {
+            "date": "2014-07-28T16:00:24Z",
+            "mailbox": "user/thomas/Calendar@example.org",
+            "op": "APPEND",
+            "rev": 2,
+            "user": "Thomas B. <thomas@example.org>"
+        },
+        {
+            "date": "2014-07-28T16:05:15Z",
+            "mailbox": "user/thomas/Calendar@example.org",
+            "op": "APPEND",
+            "rev": 3,
+            "user": "Jane, doe <jane.doe@example.org>"
+        },
+        {
+            "date": "2014-07-29T12:48:33Z",
+            "mailbox": "user/thomas/Calendar@example.org",
+            "op": "APPEND",
+            "rev": 4,
+            "user": "Thomas B. <thomas@example.org>"
+        },
+        {
+            "date": "2014-07-29T12:52:47Z",
+            "mailbox": "user/thomas/Calendar@example.org",
+            "op": "APPEND",
+            "rev": 5,
+            "user": "Thomas B. <thomas@example.org>"
+        }
+    ]
+}
