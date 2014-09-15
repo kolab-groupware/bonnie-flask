@@ -1,5 +1,14 @@
 from event import Event
 from system import System
+from user import User, Permission, AnonymousUser
+
+__all__ = [
+    'System',
+    'Event',
+    'User',
+    'Permission',
+    'AnonymousUser',
+]
 
 __class_map__ = { 'event': Event, 'system': System }
 

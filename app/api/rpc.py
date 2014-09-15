@@ -2,13 +2,15 @@ import logging
 from flask import jsonify, request
 from . import api
 from .. import model
-from authentication import auth
+from authentication import auth, permission_required
+from ..model import Permission
 
 reqid = None
-log = logging.getLogger('bonnie-flask')
+log = logging.getLogger('api')
 
 @api.route('/rpc', methods=['GET','POST'])
 @auth.login_required
+@permission_required(Permission.API_ACCESS)
 def rpc():
     """
         Endpoint for JSON-RPC calls
