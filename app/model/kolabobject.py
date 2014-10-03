@@ -1,28 +1,58 @@
-import os
+# -*- coding: utf-8 -*-
+#
+# Copyright 2014 Kolab Systems AG (http://www.kolabsys.com)
+#
+# Thomas Bruederli <bruederli at kolabsys.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 import json
 import pytz
+import hashlib
 import datetime
+import logging
+from dateutil.parser import parse
+from pykolab.xml.utils import compute_diff
 from collections import OrderedDict
+from email import message_from_string
 from flask import current_app
+from app import storage
 
+log = logging.getLogger('model.kolabobject')
 
 class KolabObject(object):
     """
         Base Model class for accessing Kolab Groupware Object data
     """
+    folder_type = 'unknown'
+    x_kolab_type = 'application/x-vnd.kolab.*'
+
     def __init__(self, env={}):
         self.env = env
         self.config = current_app.config
+        self.storage = storage.factory()
 
     def created(self, uid, mailbox=None):
         """
             Provide created date and user
         """
-        data = self._object_data(uid)
-        if data and data.has_key('changes'):
-            for change in data['changes']:
-                if change['rev'] == 1:
-                    return dict(uid=uid, date=change['date'], user=change['user'], mailbox=change['mailbox'])
+        changelog = self._object_changelog(uid)
+        if changelog and len(changelog) > 0:
+            for change in changelog:
+                if change.has_key('date'):
+                    return dict(uid=uid, date=change['date'], user=change['user'])
 
         return False
 
@@ -30,10 +60,10 @@ class KolabObject(object):
         """
             Provide last change information
         """
-        data = self._object_data(uid)
-        if data and data.has_key('changes'):
-            data['changes'].reverse()
-            for change in data['changes']:
+        changelog = self._object_changelog(uid)
+        if changelog and len(changelog) > 0:
+            changelog.reverse()
+            for change in changelog:
                 if change.has_key('date'):
                     change['uid'] = uid
                     change.pop('op', None)
@@ -45,9 +75,9 @@ class KolabObject(object):
         """
             Full changelog
         """
-        data = self._object_data(uid)
-        if data:
-            return data
+        changelog = self._object_changelog(uid)
+        if changelog:
+            return dict(uid=uid, changes=changelog)
 
         return False
 
@@ -55,16 +85,55 @@ class KolabObject(object):
         """
             Retrieve an old revision
         """
-        if not mailbox:
-            mailbox = 'Calendar'
-        filepath = os.path.join(self.config['DATA_DIR'], '%s-%d.xml' % (uid, rev))
-        if os.path.isfile(filepath):
-            fp = open(filepath,'r')
-            xml = fp.read()
-            fp.close()
-            return dict(uid=uid, rev=rev, xml=xml, mailbox=mailbox)
+        obj = self._get(uid, rev)
+
+        if obj is not None:
+            return dict(uid=uid, rev=rev, xml=str(obj), mailbox=mailbox)
 
         return False
+
+    def _get(self, uid, rev):
+        """
+            Get an old revision and return the pykolab.xml object
+        """
+        obj = False
+
+        # get a list of folders the request user has access
+        folders = self._user_permitted_folders('name')
+
+        if len(folders) > 0:
+            folder_ids = [x['_id'] for x in folders]
+
+            # retrieve the log entry matching the given uid and revision
+            results = self.storage.select(
+                query=[
+                    ('headers.Subject', '=', uid),
+                    ('headers.X-Kolab-Type', '=', self.x_kolab_type),
+                    ('folder_id', '=', folder_ids),
+                    ('revision', '=', rev)
+                ],
+                index='logstash-*',
+                doctype='logs',
+                fields='event,revision,uidset,folder_id,message',
+                limit=1
+            )
+
+            if results and results['total'] > 0:
+                for rec in results['hits']:
+                    if rec.has_key('message'):
+                        try:
+                            message = message_from_string(rec['message'].encode('utf8','replace'))
+                            obj = self._object_from_message(message) or False
+                        except Exception, e:
+                            log.warning("Failed to parse mime message for UID %s @%s: %r", uid, rev, e)
+                            continue
+
+                        if obj is False:
+                            break
+                        else:
+                            log.warning("Failed to parse mime message for UID %s @%s", uid, rev)
+
+        return obj
 
     def diff(self, uid, rev, mailbox=None):
         """
@@ -77,117 +146,128 @@ class KolabObject(object):
         if rev_old >= rev_new:
             raise ValueError("Invalid argument 'rev'")
 
-        a = self.get(uid, rev_old)
-        if a == False:
+        old = self._get(uid, rev_old)
+        if old == False:
             raise ValueError("Object %s @rev:%d not found" % (uid, rev_old))
 
-        b = self.get(uid, rev_new)
-        if b == False:
+        new = self._get(uid, rev_new)
+        if new == False:
             raise ValueError("Object %s @rev:%d not found" % (uid, rev_new))
 
-        # get dict representations from the raw XML payload
-        old = self._object_dict(a['xml'])
-        new = self._object_dict(b['xml'])
+        return dict(uid=uid, rev=rev_new, changes=convert2primitives(compute_diff(old.to_dict(), new.to_dict(), True)))
 
-        return dict(uid=uid, rev=rev_new, changes=convert2primitives(get_diff(old, new)))
-
-    def _object_dict(self, raw):
+    def _object_from_message(self, message):
         """
              To be implemented in derived classes
         """
         return None
 
-    def _object_data(self, uid):
-        data = None
-        filepath = os.path.join(self.config['DATA_DIR'], '%s.json' % (uid))
-        if os.path.isfile(filepath):
-            fp = open(filepath,'r')
-            try:
-                data = json.loads(fp.read())
-            except:
-                data = None
-            fp.close()
+    def _user_permitted_folders(self, fields='uniqueid,name'):
+        """
+            Get a list of folders the request user has access
+        """
+        # this requires a user context
+        if not self.env.has_key('REQUEST_USER') or not self.env['REQUEST_USER']:
+            return []
 
-        return data
+        # FIXME: translate the given username into its nsuiniqueid
+        userid = self._resolve_username(self.env['REQUEST_USER'])
+
+        # get a list of folders the request user has access
+        folders = self.storage.select(
+            query=[
+                ('type', '=', self.folder_type),
+                ('OR', [
+                    ('acl.anyone',  '~', 'lr*'),
+                    ('acl.'+userid, '~', 'lr*')
+                ])
+            ],
+            index='objects',
+            doctype='folder',
+            fields=fields
+        )
+
+        return folders['hits'] if folders and folders['total'] > 0 else []
+
+    def _object_changelog(self, uid):
+        """
+            Query storage for changelog events related to the given UID
+        """
+        # this requires a user context
+        if not self.env.has_key('REQUEST_USER') or not self.env['REQUEST_USER']:
+            return None
+
+        result = None
+
+        # get a list of folders the request user has access
+        folders = self._user_permitted_folders('name')
+
+        if len(folders) > 0:
+            folder_ids = [x['_id'] for x in folders]
+            folder_names = dict((x['_id'],x['name']) for x in folders)
+
+            # search for events related to the given uid and the permitted folders
+            eventlog = self.storage.select(
+                query=[
+                    ('headers.Subject', '=', uid),
+                    ('headers.X-Kolab-Type', '=', self.x_kolab_type),
+                    ('folder_id', '=', folder_ids)
+                ],
+                index='logstash-*',
+                doctype='logs',
+                sortby='@timestamp',
+                fields='event,revision,headers,uidset,folder_id,@timestamp'
+            )
+
+            # convert logstash entries into a sane changelog
+            event_op_map = {
+                'MessageAppend': 'APPEND',
+                'MessageTrash': 'DELETE',
+                'MessageMove': 'MOVE',
+            }
+            last_append_uid = 0
+            result = []
+            if eventlog and eventlog['total'] > 0:
+                for log in eventlog['hits']:
+                    # filter MessageTrash following a MessageAppend event (which is an update operation)
+                    if log['event'] == 'MessageTrash' and last_append_uid > int(log['uidset']):
+                        continue
+
+                    # remember last appended message uid
+                    if log['event'] == 'MessageAppend' and log.has_key('uidset'):
+                        last_append_uid = int(log['uidset'])
+
+                    # compose log entry to return
+                    logentry = {
+                        'rev': int(log['revision']),
+                        'op': event_op_map.get(log['event'], 'UNKNOWN'),
+                        'mailbox': folder_names.get(log['folder_id'], None)
+                    }
+                    try:
+                        timestamp = parse(log['@timestamp'])
+                        logentry['date'] = datetime.datetime.strftime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+                    except:
+                        logentry['date'] = log['@timestamp']
+
+                    # FIXME: extract user from message headers
+                    if log['event'] == 'MessageAppend' and log['headers'].has_key('From'):
+                        logentry['user'] = log['headers']['From'][0]
+
+                    result.append(logentry)
+
+        return result
+
+    def _resolve_username(self, user):
+        """
+            Resovle the given username to the corresponding nsuniqueid from LDAP
+        """
+        # TODO: resolve with storage data into its nsuiniqueid
+        # return md5 sum of the username to make usernames work as fields/keys in elasticsearch
+        return hashlib.md5(user).hexdigest()
 
 
 
-#####  Utility functions for comparing object revisions
-
-
-def get_diff(a, b):
-    """
-        List the differences between two given dicts
-    """
-    diff = []
-
-    properties = a.keys()
-    properties.extend([x for x in b.keys() if x not in properties])
-
-    for prop in properties:
-        aa = a[prop] if a.has_key(prop) else None
-        bb = b[prop] if b.has_key(prop) else None
-
-        # compare two lists
-        if isinstance(aa, list) or isinstance(bb, list):
-            if not isinstance(aa, list):
-                aa = [aa]
-            if not isinstance(bb, list):
-                bb = [bb]
-            index = 0
-            length = max(len(aa), len(bb))
-            while index < length:
-                aai = aa[index] if index < len(aa) else None
-                bbi = bb[index] if index < len(bb) else None
-                if not compare_values(aai, bbi):
-                    (old, new) = reduce_properties(aai, bbi)
-                    diff.append(OrderedDict([('property', prop), ('index', index), ('old', old), ('new', new)]))
-                index += 1
-
-        # the two properties differ
-        elif not compare_values(aa, bb):
-            (old, new) = reduce_properties(aa, bb)
-            diff.append(OrderedDict([('property', prop), ('old', old), ('new', new)]))
-
-    return diff
-
-
-def compare_values(aa, bb):
-    ignore_keys = ['rsvp']
-    if not aa.__class__ == bb.__class__:
-        return False
-
-    if isinstance(aa, dict) and isinstance(bb, dict):
-        aa = dict(aa)
-        bb = dict(bb)
-        # ignore some properties for comparison
-        for k in ignore_keys:
-            aa.pop(k, None)
-            bb.pop(k, None)
-
-    return aa == bb
-
-
-def reduce_properties(aa, bb):
-    """
-        Compares two given structs and removes equal values in bb
-    """
-    if not isinstance(aa, dict) or not isinstance(bb, dict):
-        return (aa, bb)
-
-    properties = aa.keys()
-    properties.extend([x for x in bb.keys() if x not in properties])
-
-    for prop in properties:
-        if not aa.has_key(prop) or not bb.has_key(prop):
-            continue
-        if isinstance(aa[prop], dict) and isinstance(bb[prop], dict):
-            (aa[prop], bb[prop]) = reduce_properties(aa[prop], bb[prop])
-        if aa[prop] == bb[prop]:
-            # del aa[prop]
-            del bb[prop]
-
-    return (aa, bb)
+#####  Utility functions
 
 
 def convert2primitives(struct):

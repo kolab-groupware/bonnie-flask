@@ -1,4 +1,25 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright 2014 Kolab Systems AG (http://www.kolabsys.com)
+#
+# Thomas Bruederli <bruederli at kolabsys.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 import logging
+import traceback
 from flask import jsonify, request
 from . import api
 from .. import model
@@ -8,7 +29,7 @@ from ..model import Permission
 reqid = None
 log = logging.getLogger('api')
 
-@api.route('/rpc', methods=['GET','POST'])
+@api.route('/rpc', methods=['POST'])
 @auth.login_required
 @permission_required(Permission.API_ACCESS)
 def rpc():
@@ -57,7 +78,7 @@ def _exec_api_call(method, params):
                 return getattr(obj, func)(**params)
 
             except Exception, e:
-                log.debug(traceback.format_exc())
+                log.info(traceback.format_exc())
                 raise JsonRPCException(-32603, str(e))
 
     # fall through the above checks
@@ -83,7 +104,7 @@ def json_rpc_error(e):
     """
     # log error
     log.error("JSON-RPC exception (%s) from %s: (%d) %s; %r" % (
-        reqid, request.remote_addr, e.code, e, request.body
+        reqid, request.remote_addr, e.code, e, request.data
     ))
 
     err = dict(code=e.code, message=str(e))

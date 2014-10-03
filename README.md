@@ -15,6 +15,13 @@ Install Flask and some of the used modules:
 $ pip install flask flask-bootstrap flask-httpauth flask-sqlalchemy flask-login flask-script
 ```
 
+or on a CentOS/RHEL Kolab development box:
+```
+$ yum -y install python-flask python-flask-sqlalchemy python-pip python-argparse
+$ pip install flask-bootstrap flask-script
+$ pip install --upgrade sqlalchemy
+```
+
 Get the app:
 ```
 $ git clone git@github.com:kolab-groupware/bonnie-flask.git
