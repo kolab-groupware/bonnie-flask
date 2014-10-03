@@ -33,7 +33,7 @@ Initialize the database and create a user for API access:
 ```
 $ python run.py shell
 >>> db.create_all()
->>> webclient = User(username='webclient', permissions=Permission.API_ACCESS, password='Welcome2KolabSystems')
+>>> webclient = User(username='webclient', permissions=Permission.API_ACCESS, password='Welcome2KolabSystems', secret='8431f19170e7f90d4107bf4b169baf')
 >>> db.session.add(webclient)
 >>> db.session.commit()
 ```

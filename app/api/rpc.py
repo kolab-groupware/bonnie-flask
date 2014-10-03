@@ -23,7 +23,7 @@ import traceback
 from flask import jsonify, request
 from . import api
 from .. import model
-from authentication import auth, permission_required
+from authentication import auth, permission_required, verify_request
 from ..model import Permission
 
 reqid = None
@@ -41,6 +41,9 @@ def rpc():
 
     """
     global reqid
+
+    if not verify_request(request):
+        raise JsonRPCException(-32600, "Invalid Request Signature")
 
     if api.input.has_key('jsonrpc') and api.input['jsonrpc'] == '2.0':
         reqid = api.input['id'] if api.input.has_key('id') else None

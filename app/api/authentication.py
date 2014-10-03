@@ -18,7 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from flask import g
+import hmac
+import hashlib
+from flask import g, request, current_app
 from flask.ext.httpauth import HTTPBasicAuth
 from functools import wraps
 from errors import unauthorized, forbidden
@@ -46,12 +48,47 @@ def auth_error():
 
 
 def permission_required(permission):
+    """
+        Permission check decorator
+    """
     def decorator(f):
         @wraps(f)
-        def decorated_function(*args, **kwargs):
+        def decorated_function(*args, **kw):
             if not g.current_user.can(permission):
                 return forbidden('Insufficient permissions')
-            return f(*args, **kwargs)
+            return f(*args, **kw)
         return decorated_function
     return decorator
 
+
+def signature_required():
+    """
+        Request signature verification decorator
+    """
+    def decorator(f):
+        def decorated_function(*args, **kw):
+            if not verify_request(request):
+                return forbidden('Invalid Request Signature')
+            return f(*args, **kw)
+        return decorated_function
+    return decorator
+
+
+def verify_request(request):
+    # check for allowed source IP
+    allowed_ips = current_app.config['API'].get('allow', '').split(',')
+    if request.remote_addr in allowed_ips:
+        return True
+
+    user = g.current_user
+    signature = request.headers.get('X-Request-Sign', None)
+    if not user or signature is None:
+        return False
+
+    sign = hmac.new(
+        key=user.secret.encode('utf8'),
+        msg=request.headers.get('X-Request-User') + ':' + request.data,
+        digestmod=hashlib.sha256
+    ).hexdigest()
+
+    return signature == sign

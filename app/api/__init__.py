@@ -23,6 +23,8 @@ from flask import Blueprint, jsonify, request
 api = Blueprint('api', __name__)
 
 from . import authentication, errors, rpc
+from authentication import signature_required
+
 auth = authentication.auth
 
 
@@ -35,7 +37,7 @@ def before_request():
         api.input.update(request.get_json(True, True))
         rpc.reqid = api.input['id'] if api.input.has_key('id') else None
 
-    # TODO: check X-Request-User and X-Request-Sign headers and validate the request
+    # TODO: check X-Request-User and resolve to nsuniqueid ?
     request.env['REQUEST_USER'] = request.headers.get('X-Request-User')
     request.env['REMOTE_ADDR'] = request.remote_addr
 
@@ -58,6 +60,7 @@ def env():
 
 @api.route('/<cmd>', methods=['POST'])
 @auth.login_required
+@signature_required()
 def _default(cmd):
     # TODO: implement the REST API for requests like /api/<model.method>
     return jsonify(dict(command=cmd))

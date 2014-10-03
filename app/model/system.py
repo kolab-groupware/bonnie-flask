@@ -36,10 +36,3 @@ class System(object):
         dk = hashlib.sha256(ip + rand + user + salt).digest()
         exp = datetime.datetime.utcnow().replace(microsecond=0, tzinfo=pytz.utc) + datetime.timedelta(hours=2)
         return dict(key=binascii.hexlify(dk), expires=exp.isoformat())
-
-    def _authenticate_user(self, identity):
-        """
-            Authenticate the given user identification aginst the user database
-        """
-        username = identity['login']
-        return False

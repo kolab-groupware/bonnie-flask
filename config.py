@@ -44,6 +44,11 @@ class Config:
             for key,val in parser.items('storage'):
                 self.STORAGE[key] = val
 
+        self.API = dict()
+        if parser.has_section('api'):
+            for key,val in parser.items('api'):
+                self.API[key] = val
+
     def init_app(self, app):
         pass
 
