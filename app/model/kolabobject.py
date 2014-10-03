@@ -48,11 +48,13 @@ class KolabObject(object):
         """
             Provide created date and user
         """
-        changelog = self._object_changelog(uid)
+        changelog = self._object_changelog(uid, 1)
         if changelog and len(changelog) > 0:
             for change in changelog:
-                if change.has_key('date'):
-                    return dict(uid=uid, date=change['date'], user=change['user'])
+                if change['op'] == 'APPEND':
+                    change['uid'] = uid
+                    change.pop('op', None)
+                    return change
 
         return False
 
@@ -60,11 +62,10 @@ class KolabObject(object):
         """
             Provide last change information
         """
-        changelog = self._object_changelog(uid)
+        changelog = self._object_changelog(uid, -3)
         if changelog and len(changelog) > 0:
-            changelog.reverse()
             for change in changelog:
-                if change.has_key('date'):
+                if change['op'] == 'APPEND':
                     change['uid'] = uid
                     change.pop('op', None)
                     return change
@@ -189,7 +190,7 @@ class KolabObject(object):
 
         return folders['hits'] if folders and folders['total'] > 0 else []
 
-    def _object_changelog(self, uid):
+    def _object_changelog(self, uid, limit=None):
         """
             Query storage for changelog events related to the given UID
         """
@@ -206,6 +207,12 @@ class KolabObject(object):
             folder_ids = [x['_id'] for x in folders]
             folder_names = dict((x['_id'],x['name']) for x in folders)
 
+            # set sorting and resultset size
+            sortcol = '@timestamp'
+            if limit is not None and limit < 0:
+                sortcol = sortcol + ':desc'
+                limit = abs(limit)
+
             # search for events related to the given uid and the permitted folders
             eventlog = self.storage.select(
                 query=[
@@ -215,12 +222,14 @@ class KolabObject(object):
                 ],
                 index='logstash-*',
                 doctype='logs',
-                sortby='@timestamp',
-                fields='event,revision,headers,uidset,folder_id,@timestamp'
+                sortby=sortcol,
+                fields='event,revision,headers,uidset,folder_id,@timestamp',
+                limit=limit
             )
 
             # convert logstash entries into a sane changelog
             event_op_map = {
+                'MessageNew': 'APPEND',
                 'MessageAppend': 'APPEND',
                 'MessageTrash': 'DELETE',
                 'MessageMove': 'MOVE',
@@ -239,7 +248,7 @@ class KolabObject(object):
 
                     # compose log entry to return
                     logentry = {
-                        'rev': int(log['revision']),
+                        'rev': int(log['revision']) if log.has_key('revision') else None,
                         'op': event_op_map.get(log['event'], 'UNKNOWN'),
                         'mailbox': folder_names.get(log['folder_id'], None)
                     }
@@ -249,7 +258,7 @@ class KolabObject(object):
                     except:
                         logentry['date'] = log['@timestamp']
 
-                    # FIXME: extract user from message headers
+                    # FIXME: extract user from message headers until #3735 is done
                     if log['event'] == 'MessageAppend' and log['headers'].has_key('From'):
                         logentry['user'] = log['headers']['From'][0]
 
