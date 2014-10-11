@@ -171,7 +171,7 @@ class KolabObject(object):
         if not self.env.has_key('REQUEST_USER') or not self.env['REQUEST_USER']:
             return []
 
-        # FIXME: translate the given username into its nsuiniqueid
+        # translate the given username into its nsuiniqueid
         userid = self._resolve_username(self.env['REQUEST_USER'])
 
         # get a list of folders the request user has access
@@ -223,7 +223,7 @@ class KolabObject(object):
                 index='logstash-*',
                 doctype='logs',
                 sortby=sortcol,
-                fields='event,revision,headers,uidset,folder_id,@timestamp',
+                fields='event,revision,headers,uidset,folder_id,user,user_id,@timestamp',
                 limit=limit
             )
 
@@ -258,9 +258,7 @@ class KolabObject(object):
                     except:
                         logentry['date'] = log['@timestamp']
 
-                    # FIXME: extract user from message headers until #3735 is done
-                    if log['event'] == 'MessageAppend' and log['headers'].has_key('From'):
-                        logentry['user'] = log['headers']['From'][0]
+                    logentry['user'] = self._get_user_info(log)
 
                     result.append(logentry)
 
@@ -270,10 +268,40 @@ class KolabObject(object):
         """
             Resovle the given username to the corresponding nsuniqueid from LDAP
         """
-        # TODO: resolve with storage data into its nsuiniqueid
-        # return md5 sum of the username to make usernames work as fields/keys in elasticsearch
+        # find existing entry in our storage backend
+        result = self.storage.select(
+            [ ('user', '=', user) ],
+            index='objects',
+            doctype='user',
+            sortby='@timestamp:desc',
+            limit=1
+        )
+
+        if result and result['total'] > 0:
+            # TODO: cache this lookup in memory?
+            return result['hits'][0]['_id']
+
+        # fall-back: return md5 sum of the username to make usernames work as fields/keys in elasticsearch
         return hashlib.md5(user).hexdigest()
 
+    def _get_user_info(self, log):
+        """
+            Return user information (name, email) related to the given log entry
+        """
+        if log.has_key('user_id'):
+            # get real user name from log['user_id']
+            user = self.storage.get(log['user_id'], index='objects', doctype='user')
+            if user is not None:
+                return "%(cn)s <%(user)s>" % user
+
+        if log.has_key('user'):
+            return log['user']
+
+        elif log['event'] == 'MessageAppend' and log['headers'].has_key('From'):
+            # fallback to message headers
+            return log['headers']['From'][0]
+
+        return 'unknown'
 
 
 #####  Utility functions
