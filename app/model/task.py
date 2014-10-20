@@ -19,17 +19,17 @@
 #
 
 from kolabobject import KolabObject
-from pykolab.xml import event_from_message
+from pykolab.xml import todo_from_message
 
-class Event(KolabObject):
+class Task(KolabObject):
     """
-        Model class for accessing Kolab Groupware Event data
+        Model class for accessing Kolab Groupware Task data
     """
 
     def __init__(self, *args, **kw):
         KolabObject.__init__(self, *args, **kw)
-        self.folder_type = 'event'
-        self.x_kolab_type = 'application/x-vnd.kolab.event'
+        self.folder_type = 'task'
+        self.x_kolab_type = 'application/x-vnd.kolab.task'
 
     def _object_from_message(self, message):
-        return event_from_message(message)
+        return todo_from_message(message)

@@ -19,18 +19,24 @@
 #
 
 from event import Event
+from task import Task
 from system import System
 from user import User, Permission, AnonymousUser
 
 __all__ = [
     'System',
     'Event',
+    'Task',
     'User',
     'Permission',
     'AnonymousUser',
 ]
 
-__class_map__ = { 'event': Event, 'system': System }
+__class_map__ = {
+    'event': Event,
+    'task': Task,
+    'system': System,
+}
 
 def get_instance(classname, **kw):
     """
