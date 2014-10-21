@@ -129,7 +129,7 @@ class KolabObject(object):
                             log.warning("Failed to parse mime message for UID %s @%s: %r", uid, rev, e)
                             continue
 
-                        if obj is False:
+                        if obj is not False:
                             break
                         else:
                             log.warning("Failed to parse mime message for UID %s @%s", uid, rev)
