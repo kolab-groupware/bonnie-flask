@@ -4,11 +4,19 @@ define([
 ], function (Backbone) {
     "use strict";
 
+    var Permission = {
+        API_ACCESS: 1,
+        WEB_ACCESS: 2,
+        ADMINISTATOR: 128
+    };
+
     var User = Backbone.Model.extend({
 
         urlRoot: "/data/users",
 
         idAttribute: "id",
+
+        Permission: Permission,
 
         initialize: function() {
 
@@ -29,7 +37,7 @@ define([
             if (attributes['password'] && attributes['password'] != attributes['password-check']) {
                 return App._("Password repeat doesn't match");
             }
-            if ((attributes['permissions'] & 1) && !attributes['secret']) {
+            if ((attributes['permissions'] & Permission.API_ACCESS) && !attributes['secret']) {
                 return App._("Please set a secret key for API access");
             }
         }
@@ -46,6 +54,7 @@ define([
 
     return {
         User: User,
-        UserCollection: UserCollection
+        UserCollection: UserCollection,
+        Permission: Permission
     };
 });

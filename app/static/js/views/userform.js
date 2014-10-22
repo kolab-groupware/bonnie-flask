@@ -46,10 +46,14 @@ define([
             this.$el.find('.btn-save').prop('disabled', true);
 
             // set permission options
-            var rights = this.model.get('permissions')
-            this.$el.find('#ff-user-permissions option').each(function(i,opt) {
-                var val = parseInt(opt.value);
-                opt.selected = (val & rights) > 0;
+            var rights = this.model.get('permissions'),
+                selector = this.$el.find('#ff-user-permissions');
+            $.each(this.model.Permission, function(name,val) {
+                $('<option>')
+                    .attr('value', val)
+                    .text(name)
+                    .prop('selected', (val & rights) > 0)
+                    .appendTo(selector)
             });
 
             // reset changed state...
