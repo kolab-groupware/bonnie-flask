@@ -29,7 +29,7 @@ body {
 
 .flash-container .alert {
 	padding: 8px 15px;
-	margin-bottom: 2px;
+	margin-bottom: 3px;
 }
 
 .flash-container .alert button.close {
@@ -73,6 +73,22 @@ body {
 
 	.flash-container {
 		margin-left: -585px;
+	}
+
+}
+
+@media (min-height: 600px) {
+
+	.loginbox {
+		margin-top: 6em;
+	}
+
+}
+
+@media (min-height: 800px) {
+
+	.loginbox {
+		margin-top: 10em;
 	}
 
 }
