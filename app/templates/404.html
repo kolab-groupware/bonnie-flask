@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    <div class="jumbotron">
+        <h1>{{ gettext("Wrong Turn!") }}</h1>
+        <p class="lead">{{ gettext("The page you requested does not exist.") }}</p>
+        <p><small>{{ gettext("Please return to the previous page or <a href=\"%(url)s\">start over</a>.", url=url_for('root.index')) }}</small></p>
+    </div>
+{% endblock %}
+

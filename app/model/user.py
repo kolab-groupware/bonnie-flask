@@ -19,11 +19,13 @@
 #
 
 import hashlib
+from sqlalchemy import not_
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask.ext.login import UserMixin, AnonymousUserMixin
+from flask.ext.babel import gettext as _
 from flask import current_app
-from .. import db #, login_manager
+from .. import db, login_manager
 
 
 class Permission:
@@ -44,6 +46,7 @@ class User(UserMixin, db.Model):
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
+        self.validation_errors = []
 
     @property
     def password(self):
@@ -63,14 +66,42 @@ class User(UserMixin, db.Model):
     def can(self, permission):
         return (self.permissions & permission) == permission
 
+    def update(self, attrib):
+        for key, value in attrib.iteritems():
+            if not key == 'id' and hasattr(self, key):
+                setattr(self, key, value)
+
+        if attrib.has_key('password'):
+            self.password = attrib['password']
+
+    def validate(self):
+        self.validation_errors = []
+
+        if self.username.strip() == '':
+            self.validation_errors.append(_("Username must not be empty"))
+        elif User.query.filter(User.username==self.username, not_(User.id==self.id)).count() > 0:
+            self.validation_errors.append(_("Username already taken"))
+
+        return len(self.validation_errors) == 0
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'name': self.name,
+            'permissions': self.permissions,
+            'secret': self.secret,
+        }
+
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
 
-#login_manager.anonymous_user = AnonymousUser
+login_manager.anonymous_user = AnonymousUser
 
 
-#@login_manager.user_loader
+@login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))

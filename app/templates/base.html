@@ -1,0 +1,49 @@
+{% extends "bootstrap/base.html" %}
+{% block styles %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block title %}Bonnie{% endblock %}
+
+{% block navbar %}
+{% if current_user.is_authenticated() %}
+  <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+          <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">{{ gettext("Toggle navigation") }}</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="#">Bonnie</a>
+          </div>
+          <div class="collapse navbar-collapse">
+              <ul class="nav navbar-nav" id="mainnav">
+                  {% block mainnav %}{% endblock %}
+              </ul>
+              <ul class="nav navbar-nav navbar-right">
+                  <li><span class="navbar-text username">{{ current_user.name or current_user.username }}</span></li>
+                  <li><a href="{{ url_for('auth.logout') }}">{{ gettext("Logout") }}</a></li>
+              </ul>
+          </div><!--/.nav-collapse -->
+      </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+      {% for message in get_flashed_messages() %}
+      <div class="alert alert-warning">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {{ message }}
+      </div>
+      {% endfor %}
+    
+      {% block page_content %}
+      [put page content here]
+      {% endblock %}
+  </div>
+{% endblock %}

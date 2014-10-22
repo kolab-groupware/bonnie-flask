@@ -1,0 +1,31 @@
+/* Application UI styles */
+
+body {
+	margin-bottom: 20px;
+}
+
+.backbone-view {
+	display: none;
+}
+
+.table .col-actions {
+	text-align: right;
+}
+
+.container .alert {
+	margin-bottom: 8px;
+}
+
+.flash-container {
+	min-height: 42px;
+	margin-top: -18px;
+}
+
+.flash-container .alert {
+	padding: 8px 15px;
+	margin-bottom: 2px;
+}
+
+.flash-container .alert button.close {
+	margin-top: -2px;
+}

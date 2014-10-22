@@ -18,10 +18,22 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from flask import Blueprint
+from flask import Blueprint, render_template
+from flask.ext.login import login_required, current_user
+from flask.ext.babel import gettext as _
+
+from app.auth import auth, permission_required
+from ..model import Permission
 
 root = Blueprint('root', __name__)
 
 @root.route('/')
+@login_required
+@permission_required(Permission.WEB_ACCESS)
 def index():
-    return "<h1>Hello Bonnie!</h1>"
+    nav = {}
+    # add admin tasks
+    if current_user.can(Permission.ADMINISTATOR):
+        nav['users'] = _("Users")
+
+    return render_template('window.html', mainnav=nav.items())

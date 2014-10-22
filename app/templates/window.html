@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block scripts %}
+    {{ super() }}
+    <script data-main="{{ url_for('static', filename='js/app') }}" src="{{ url_for('static', filename='js/libs/require.js') }}"></script>
+{% endblock %}
+
+{% block title %}Bonnie{% endblock %}
+
+{% block mainnav %}
+    {% for route,label in mainnav %}
+        <li class="route-{{ route }}"><a href="#{{ route }}">{{ label }}</a></li>
+    {% endfor %}
+{% endblock %}
+
+
+{% block content %}
+    <div class="container flash-container" id="flash-container"></div>
+
+    <div class="container backbone-view" id="view-home">
+        <h1>{{ gettext("Welcome to the Bonnie Web Service") }}</h1>
+        <p class="lead">{{ gettext("Hello, %(user)s", user=current_user.name or current_user.username) }}</p>
+    </div>
+{% endblock %}

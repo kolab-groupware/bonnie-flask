@@ -31,6 +31,10 @@ class Config:
     SQLALCHEMY_RECORD_QUERIES = True
     CONFIG_DIR = os.path.join(basedir, 'config')
     CONFIG_FILE = os.path.join(basedir, 'config', 'bonnie-flask.conf')
+    BABEL_DEFAULT_LOCALE = 'en_US'
+    BABEL_DEFAULT_TIMEZONE = 'UTC'
+    BOOTSTRAP_SERVE_LOCAL = True
+    BOOTSTRAP_USE_MINIFIED = False
 
     def __init__(self):
         parser = SafeConfigParser()

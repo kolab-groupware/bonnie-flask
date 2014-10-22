@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    <div class="jumbotron">
+        <h1>{{ gettext("Forbidden!") }}</h1>
+        <p class="lead">{{ gettext("You're not permitted to access this page.") }}</p>
+        <p><small>{{ gettext("Please return to the previous page or <a href=\"%(url)s\">terminate the session</a>.", url=url_for('auth.logout')) }}</small></p>
+    </div>
+{% endblock %}
+
