@@ -57,7 +57,7 @@ define([
                             me.activateView(view);
                         },
                         error: function(model, response, options) {
-                            UI.flash('Failed to fetch user ' + id, 'danger');
+                            UI.flash(App._('Failed to fetch user __id__', { id: id }), 'danger');
                         }
                     });
                 }

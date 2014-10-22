@@ -2,7 +2,9 @@
 
 ///// globals
 
-var App = {};
+var App = {
+    _: function(s) { return s }
+};
 var UI = {};
 
 /**
@@ -41,8 +43,8 @@ UI.confirm = function(message, title, ack, nack) {
             '<p></p>' +
           '</div>' +
           '<div class="modal-footer">' +
-            '<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>' +
-            '<button type="button" class="btn btn-primary" data-dismiss="modal">Confirm</button>' +
+            '<button type="button" class="btn btn-default" data-dismiss="modal">' + App._('Cancel') + '</button>' +
+            '<button type="button" class="btn btn-primary" data-dismiss="modal">' + App._('Confirm') + '</button>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -92,6 +94,9 @@ require.config({
 
         'handlebars': {
             exports: 'Handlebars'
+        },
+        'i18next': {
+            exports: 'i18n'
         }
     },
 
@@ -100,11 +105,34 @@ require.config({
         backbone: "libs/backbone-min",
         underscore: "libs/underscore-min",
         handlebars: "libs/handlebars-v2.0.0",
+        i18next: "libs/i18next.amd-1.7.4.min",
         templates: "templates"
     }
 });
 
-require(['backbone', 'routers/main', 'views/nav'], function (Backbone, Router, NavView) {
+require(['backbone', 'i18next', 'handlebars', 'routers/main', 'views/nav'], function (Backbone, i18n, Handlebars, Router, NavView) {
+    // initialize i18n
+    var opts = {
+        ns: 'bonnie-client',
+        lng: 'en',
+        fallbackLng: 'en',
+        preload: ['en'],
+        interpolationPrefix: '%(',
+        interpolationSuffix: ')s',
+        resGetPath: '/static/js/locales/%(lng)s/%(ns)s.json',
+        // enable during development:
+        sendMissing: true,
+        missingKeyHandler: function(lng, ns, key, defaultValue, lngs) {
+            console.log("Missing locale:", ns, lng, '"' + key + '"');
+        }
+    };
+    i18n.init(opts, function(t) {
+        App._ = t;
+        Handlebars.registerHelper('_', function(key) {
+            return new Handlebars.SafeString(t(key));
+        });
+    });
+
     // initialize routing and start Backbone.history()
     App.router = new Router();
     Backbone.history.start();

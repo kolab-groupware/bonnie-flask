@@ -2,19 +2,19 @@
 
 <form role="form" method="post">
     <div class="form-group">
-        <label for="ff-user-username">Username</label>
+        <label for="ff-user-username">{{ _ "Username" }}</label>
         <input type="text" name="username" class="form-control required" id="ff-user-username" value="{{ username }}" required="required">
     </div>
     <div class="form-group">
-        <label for="ff-user-name">Real name</label>
+        <label for="ff-user-name">{{ _ "Real name" }}</label>
         <input type="text" name="name" class="form-control" id="ff-user-name" value="{{ name }}">
     </div>
     <div class="form-group">
-        <label for="ff-user-email">Email address</label>
+        <label for="ff-user-email">{{ _ "Email address" }}</label>
         <input type="text" name="email" class="form-control" id="ff-user-email" value="{{ email }}">
     </div>
     <div class="form-group">
-        <label for="ff-user-permissions">Permissions</label>
+        <label for="ff-user-permissions">{{ _ "Permissions" }}</label>
         <select id="ff-user-permissions" name="permissions" class="form-control" multiple="multiple">
           <option value="1">API_ACCESS</option>
           <option value="2">WEB_ACCESS</option>
@@ -22,24 +22,24 @@
         </select>
     </div>
     <div class="form-group">
-        <label for="ff-user-email">API Secret</label>
+        <label for="ff-user-email">{{ _ "API Secret" }}</label>
         <div class="input-group">
           <input type="text" name="secret" class="form-control" id="ff-user-secret" value="{{ secret }}">
           <span class="input-group-btn">
-              <button class="btn btn-default btn-generate-secret" type="button">Generate</button>
+              <button class="btn btn-default btn-generate-secret" type="button">{{ _ "Generate" }}</button>
           </span>
         </div>
     </div>
     <div class="form-group">
-        <label for="ff-user-password">Password</label>
+        <label for="ff-user-password">{{ _ "Password" }}</label>
         <input type="password" name="password" class="form-control" id="ff-user-password">
     </div>
     <div class="form-group">
-        <label for="ff-user-password-check">Password Repeat</label>
+        <label for="ff-user-password-check">{{ _ "Password repeat" }}</label>
         <input type="password" name="password-check" class="form-control" id="ff-user-password-check">
     </div>
 
-    <button type="button" class="btn btn-default btn-primary btn-save">Save</button>
+    <button type="button" class="btn btn-default btn-primary btn-save">{{ _ "Save" }}</button>
     &nbsp;
-    <button type="button" class="btn btn-default btn-danger btn-delete">Delete User</button>
+    <button type="button" class="btn btn-default btn-danger btn-delete">{{ _ "Delete User" }}</button>
 </form>

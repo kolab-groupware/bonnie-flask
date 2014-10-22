@@ -87,7 +87,7 @@ define([
             if (this.model.hasChanged()) {
                 // validate data before submitting
                 if (!this.model.isValid()) {
-                    UI.flash("User data is not valid: " + this.model.validationError, 'warning');
+                    UI.flash(App._("User data is not valid") + ": " + this.model.validationError, 'warning');
                     this.model.set(this.model.attributes);
                     return false;
                 }
@@ -97,14 +97,14 @@ define([
                 this.model.save({}, {
                     success: function(model, response) {
                         // show confirmation message
-                        UI.flash('Saved successfully', 'success');
+                        UI.flash(App._("Saved successfully"), 'success');
 
                         if (response.id) {
                             App.router.navigate('users/' + response.id, { trigger: true });
                         }
                     },
                     error: function(model, response) {
-                        UI.flash('Error saving user! ' + (response.responseJSON.error || ''), 'danger');
+                        UI.flash(App._("Error saving user!") + ' ' + (response.responseJSON.error || ''), 'danger');
                         me.$el.find('.btn-save').prop('disabled', false);
                     }
                 });
@@ -114,17 +114,20 @@ define([
 
         deleteUser: function() {
             var me = this;
-            UI.confirm('Do you really want to delete user ' + this.model.username + '?', 'Delete User', function() {
-                me.model.destroy({
-                    success: function(model, response) {
-                        UI.flash('Successfully deleted user', 'success');
-                        App.router.navigate('users', { trigger: true });
-                    },
-                    error: function(model, response) {
-                        UI.flash('Error deleting user:' + (response || ''), 'danger');
-                    }
+            UI.confirm(
+                App._("Do you really want to delete user '%(username)s'?", { username: me.model.get('username') }),
+                App._("Delete User"),
+                function() {
+                    me.model.destroy({
+                        success: function(model, response) {
+                            UI.flash(App._('Successfully deleted user'), 'success');
+                            App.router.navigate('users', { trigger: true });
+                        },
+                        error: function(model, response) {
+                            UI.flash(App._('Error deleting user') + ': ' + (response || ''), 'danger');
+                        }
+                    });
                 });
-            });
         },
 
         generateSecret: function() {

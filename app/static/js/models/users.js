@@ -21,16 +21,16 @@ define([
 
         validate: function(attributes, options) {
             if (!attributes['username'] || attributes['username'].replace(/(^\s+)|(\s+)$/, '') == '') {
-                return "Username is required";
+                return App._("Username is required");
             }
             if (attributes['password'] && attributes['password'].length < 5) {
-                return "Password too short";
+                return App._("Password too short");
             }
             if (attributes['password'] && attributes['password'] != attributes['password-check']) {
-                return "Password repeat doesn't match";
+                return App._("Password repeat doesn't match");
             }
             if ((attributes['permissions'] & 1) && !attributes['secret']) {
-                return "Please set a secret key for API access";
+                return App._("Please set a secret key for API access");
             }
         }
 

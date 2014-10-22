@@ -1,0 +1,85 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: node-gettext\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid "Manage Users"
+msgstr "Manage Users"
+
+msgid "Username"
+msgstr "Username"
+
+msgid "Real name"
+msgstr "Real name"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Email address"
+msgstr "Email address"
+
+msgid "Permissions"
+msgstr "Permissions"
+
+msgid "Generate"
+msgstr "Generate"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Password repeat"
+msgstr "Password repeat"
+
+msgid "API Secret"
+msgstr "API Secret"
+
+msgid "Add User"
+msgstr "Add User"
+
+msgid "Edit User"
+msgstr "Edit User"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Confirm"
+msgstr "Confirm"
+
+msgid "Delete User"
+msgstr "Delete User"
+
+msgid "Do you really want to delete user '%(username)s'?"
+msgstr "Do you really want to delete user '%(username)s'?"
+
+msgid "User data is not valid"
+msgstr "User data is not valid"
+
+msgid "Username is required"
+msgstr "Username is required"
+
+msgid "Password too short"
+msgstr "Password too short"
+
+msgid "Password repeat doesn't match"
+msgstr "Password repeat doesn't match"
+
+msgid "Please set a secret key for API access"
+msgstr "Please set a secret key for API access"
+
+msgid "Saved successfully"
+msgstr "Saved successfully"
+
+msgid "Error saving user!"
+msgstr "Error saving user!"
+
+msgid "Successfully deleted user"
+msgstr "Successfully deleted user"
+
+msgid "Error deleting user"
+msgstr "Error deleting user"
