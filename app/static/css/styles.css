@@ -2,6 +2,7 @@
 
 body {
 	margin-bottom: 20px;
+	padding-top: 85px;
 }
 
 .backbone-view {
@@ -17,8 +18,13 @@ body {
 }
 
 .flash-container {
+	position: fixed;
+	top: 4px;
 	min-height: 42px;
-	margin-top: -18px;
+}
+
+.navbar-fixed-top + .flash-container {
+	top: 54px;
 }
 
 .flash-container .alert {
@@ -28,4 +34,45 @@ body {
 
 .flash-container .alert button.close {
 	margin-top: -2px;
+}
+
+@media (max-width: 768px) {
+
+	.flash-container {
+		width: 100%;
+	}
+	
+	.navbar-nav > li > span.username {
+		display: block;
+		padding: 10px 15px;
+		margin-top: 10px;
+		margin-bottom: 0;
+		line-height: 20px;
+	}
+
+}
+
+@media (min-width: 768px) {
+
+	.flash-container {
+		left: 50%;
+		margin-left: -375px;
+	}
+
+}
+
+@media (min-width: 992px) {
+
+	.flash-container {
+		margin-left: -485px;
+	}
+
+}
+
+@media (min-width: 1200px) {
+
+	.flash-container {
+		margin-left: -585px;
+	}
+
 }
