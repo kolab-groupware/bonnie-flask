@@ -34,7 +34,11 @@ def before_request():
     request.env = dict()
 
     if request.method == 'POST':
-        api.input.update(request.get_json(True, True))
+        if hasattr(request, 'get_json'):
+            api.input.update(request.get_json(True, True))
+        else:
+            api.input.update(request.json)
+
         rpc.reqid = api.input['id'] if api.input.has_key('id') else None
 
     # TODO: check X-Request-User and resolve to nsuniqueid ?
