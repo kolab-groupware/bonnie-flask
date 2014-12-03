@@ -31,7 +31,7 @@ from .. import db, login_manager
 class Permission:
     API_ACCESS = 0x01
     WEB_ACCESS = 0x02
-    ADMINISTATOR = 0x80
+    ADMINISTRATOR = 0x80
 
 
 class User(UserMixin, db.Model):

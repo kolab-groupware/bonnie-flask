@@ -7,7 +7,7 @@ define([
     var Permission = {
         API_ACCESS: 1,
         WEB_ACCESS: 2,
-        ADMINISTATOR: 128
+        ADMINISTRATOR: 128
     };
 
     var User = Backbone.Model.extend({

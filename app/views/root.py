@@ -33,7 +33,7 @@ root = Blueprint('root', __name__)
 def index():
     nav = {}
     # add admin tasks
-    if current_user.can(Permission.ADMINISTATOR):
+    if current_user.can(Permission.ADMINISTRATOR):
         nav['users'] = _("Users")
 
     return render_template('window.html', mainnav=nav.items())

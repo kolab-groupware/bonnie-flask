@@ -48,7 +48,7 @@ def notfound():
 
 @data.route('/users', methods=['GET','POST'])
 @login_required
-@permission_required(Permission.ADMINISTATOR)
+@permission_required(Permission.ADMINISTRATOR)
 def users():
     result = []
 
@@ -79,7 +79,7 @@ def users():
 
 @data.route('/users/<id>', methods=['GET','PUT','DELETE'])
 @login_required
-@permission_required(Permission.ADMINISTATOR)
+@permission_required(Permission.ADMINISTRATOR)
 def users_rec(id):
     result = {}
 
