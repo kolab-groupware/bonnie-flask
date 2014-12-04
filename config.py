@@ -41,7 +41,7 @@ class Config:
         parser.read(self.CONFIG_FILE)
 
         if parser.has_section('db') and parser.has_option('db', 'uri'):
-            self.SQLALCHEMY_DATABASE_URI = self.parser.get('db', 'uri')
+            self.SQLALCHEMY_DATABASE_URI = parser.get('db', 'uri')
 
         self.STORAGE = dict()
         if parser.has_section('storage'):
