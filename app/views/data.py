@@ -58,7 +58,11 @@ def users():
             result.append(user.to_json())
 
     elif request.method == 'POST':
-        save_data = request.get_json(True, True)
+        if hasattr(request, 'get_json'):
+            save_data = request.get_json(True, True)
+        else:
+            save_data = request.json
+
         save_data.pop('password-check', None)
 
         try:
@@ -96,7 +100,11 @@ def users_rec(id):
 
     # handle updates from PUT requests
     elif request.method == 'PUT':
-        save_data = request.get_json(True, True)
+        if hasattr(request, 'get_json'):
+            save_data = request.get_json(True, True)
+        else:
+            save_data = request.json
+
         save_data.pop('password-check', None)
 
         # don't allow one to change its own permissions
