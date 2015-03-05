@@ -23,11 +23,10 @@ import pytz
 import hashlib
 import datetime
 import logging
-from dateutil.parser import parse
+from dateutil.parser import parse as parse_date
 from pykolab.xml.utils import compute_diff
 from collections import OrderedDict
 from email import message_from_string
-from flask import current_app
 from app import storage
 
 log = logging.getLogger('model.kolabobject')
@@ -40,15 +39,17 @@ class KolabObject(object):
     x_kolab_type = 'application/x-vnd.kolab.*'
 
     def __init__(self, env={}):
+        from flask import current_app
+
         self.env = env
         self.config = current_app.config
         self.storage = storage.factory()
 
-    def created(self, uid, mailbox=None):
+    def created(self, uid, mailbox=None, msguid=None):
         """
             Provide created date and user
         """
-        changelog = self._object_changelog(uid, 1)
+        changelog = self._object_changelog(uid, mailbox, msguid, 1)
         if changelog and len(changelog) > 0:
             for change in changelog:
                 if change['op'] == 'APPEND':
@@ -58,11 +59,11 @@ class KolabObject(object):
 
         return False
 
-    def lastmodified(self, uid, mailbox=None):
+    def lastmodified(self, uid, mailbox=None, msguid=None):
         """
             Provide last change information
         """
-        changelog = self._object_changelog(uid, -3)
+        changelog = self._object_changelog(uid, mailbox, msguid, -3)
         if changelog and len(changelog) > 0:
             for change in changelog:
                 if change['op'] == 'APPEND':
@@ -72,71 +73,48 @@ class KolabObject(object):
 
         return False
 
-    def changelog(self, uid, mailbox=None):
+    def changelog(self, uid, mailbox=None, msguid=None):
         """
             Full changelog
         """
-        changelog = self._object_changelog(uid)
+        changelog = self._object_changelog(uid, mailbox, msguid)
         if changelog:
             return dict(uid=uid, changes=changelog)
 
         return False
 
-    def get(self, uid, rev, mailbox=None):
+    def get(self, uid, rev, mailbox=None, msguid=None):
         """
             Retrieve an old revision
         """
-        obj = self._get(uid, rev)
+        obj = self._get(uid, mailbox, msguid, rev)
 
         if obj is not None:
             return dict(uid=uid, rev=rev, xml=str(obj), mailbox=mailbox)
 
         return False
 
-    def _get(self, uid, rev):
+    def _get(self, uid, mailbox, msguid, rev):
         """
             Get an old revision and return the pykolab.xml object
         """
         obj = False
 
-        # get a list of folders the request user has access
-        folders = self._user_permitted_folders('name')
+        rec = self.storage.get_revision(uid, self._resolve_mailbox_uri(mailbox), msguid, rev)
 
-        if len(folders) > 0:
-            folder_ids = [x['_id'] for x in folders]
+        if rec is not None and rec.has_key('message'):
+            try:
+                message = message_from_string(rec['message'].encode('utf8','replace'))
+                obj = self._object_from_message(message) or False
+            except Exception, e:
+                log.warning("Failed to parse mime message for UID %s @%s: %r", uid, rev, e)
 
-            # retrieve the log entry matching the given uid and revision
-            results = self.storage.select(
-                query=[
-                    ('headers.Subject', '=', uid),
-                    ('headers.X-Kolab-Type', '=', self.x_kolab_type),
-                    ('folder_id', '=', folder_ids),
-                    ('revision', '=', rev)
-                ],
-                index='logstash-*',
-                doctype='logs',
-                fields='event,revision,uidset,folder_id,message',
-                limit=1
-            )
-
-            if results and results['total'] > 0:
-                for rec in results['hits']:
-                    if rec.has_key('message'):
-                        try:
-                            message = message_from_string(rec['message'].encode('utf8','replace'))
-                            obj = self._object_from_message(message) or False
-                        except Exception, e:
-                            log.warning("Failed to parse mime message for UID %s @%s: %r", uid, rev, e)
-                            continue
-
-                        if obj is not False:
-                            break
-                        else:
-                            log.warning("Failed to parse mime message for UID %s @%s", uid, rev)
+            if obj is False:
+                log.warning("Failed to parse mime message for UID %s @%s", uid, rev)
 
         return obj
 
-    def diff(self, uid, rev, mailbox=None):
+    def diff(self, uid, rev, mailbox=None, msguid=None):
         """
             Compare two revisions of an object and return a list of property changes
         """
@@ -147,11 +125,11 @@ class KolabObject(object):
         if rev_old >= rev_new:
             raise ValueError("Invalid argument 'rev'")
 
-        old = self._get(uid, rev_old)
+        old = self._get(uid, mailbox, msguid, rev_old)
         if old == False:
             raise ValueError("Object %s @rev:%d not found" % (uid, rev_old))
 
-        new = self._get(uid, rev_new)
+        new = self._get(uid, mailbox, msguid, rev_new)
         if new == False:
             raise ValueError("Object %s @rev:%d not found" % (uid, rev_new))
 
@@ -163,34 +141,7 @@ class KolabObject(object):
         """
         return None
 
-    def _user_permitted_folders(self, fields='uniqueid,name'):
-        """
-            Get a list of folders the request user has access
-        """
-        # this requires a user context
-        if not self.env.has_key('REQUEST_USER') or not self.env['REQUEST_USER']:
-            return []
-
-        # translate the given username into its nsuiniqueid
-        userid = self._resolve_username(self.env['REQUEST_USER'])
-
-        # get a list of folders the request user has access
-        folders = self.storage.select(
-            query=[
-                ('type', '=', self.folder_type),
-                ('OR', [
-                    ('acl.anyone',  '~', 'lr*'),
-                    ('acl.'+userid, '~', 'lr*')
-                ])
-            ],
-            index='objects',
-            doctype='folder',
-            fields=fields
-        )
-
-        return folders['hits'] if folders and folders['total'] > 0 else []
-
-    def _object_changelog(self, uid, limit=None):
+    def _object_changelog(self, uid, mailbox, msguid, limit=None):
         """
             Query storage for changelog events related to the given UID
         """
@@ -198,69 +149,44 @@ class KolabObject(object):
         if not self.env.has_key('REQUEST_USER') or not self.env['REQUEST_USER']:
             return None
 
-        result = None
+        # fetch event log from storage
+        eventlog = self.storage.get_events(uid, self._resolve_mailbox_uri(mailbox), msguid, limit)
 
-        # get a list of folders the request user has access
-        folders = self._user_permitted_folders('name')
+        # convert logstash entries into a sane changelog
+        event_op_map = {
+            'MessageNew': 'APPEND',
+            'MessageAppend': 'APPEND',
+            'MessageTrash': 'DELETE',
+            'MessageMove': 'MOVE',
+        }
+        last_append_uid = 0
+        result = []
 
-        if len(folders) > 0:
-            folder_ids = [x['_id'] for x in folders]
-            folder_names = dict((x['_id'],x['name']) for x in folders)
+        if eventlog is not None:
+            for log in eventlog:
+                # filter MessageTrash following a MessageAppend event (which is an update operation)
+                if log['event'] == 'MessageTrash' and last_append_uid > int(log['uidset']):
+                    continue
 
-            # set sorting and resultset size
-            sortcol = '@timestamp'
-            if limit is not None and limit < 0:
-                sortcol = sortcol + ':desc'
-                limit = abs(limit)
+                # remember last appended message uid
+                if log['event'] == 'MessageAppend' and log.has_key('uidset'):
+                    last_append_uid = int(log['uidset'])
 
-            # search for events related to the given uid and the permitted folders
-            eventlog = self.storage.select(
-                query=[
-                    ('headers.Subject', '=', uid),
-                    ('headers.X-Kolab-Type', '=', self.x_kolab_type),
-                    ('folder_id', '=', folder_ids)
-                ],
-                index='logstash-*',
-                doctype='logs',
-                sortby=sortcol,
-                fields='event,revision,headers,uidset,folder_id,user,user_id,@timestamp',
-                limit=limit
-            )
+                # compose log entry to return
+                logentry = {
+                    'rev': int(log['revision']) if log.has_key('revision') else None,
+                    'op': event_op_map.get(log['event'], 'UNKNOWN'),
+                    'mailbox': folder_names.get(log['folder_id'], None)
+                }
+                try:
+                    timestamp = parse_date(log['timestamp'])
+                    logentry['date'] = datetime.datetime.strftime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+                except:
+                    logentry['date'] = log['timestamp']
 
-            # convert logstash entries into a sane changelog
-            event_op_map = {
-                'MessageNew': 'APPEND',
-                'MessageAppend': 'APPEND',
-                'MessageTrash': 'DELETE',
-                'MessageMove': 'MOVE',
-            }
-            last_append_uid = 0
-            result = []
-            if eventlog and eventlog['total'] > 0:
-                for log in eventlog['hits']:
-                    # filter MessageTrash following a MessageAppend event (which is an update operation)
-                    if log['event'] == 'MessageTrash' and last_append_uid > int(log['uidset']):
-                        continue
+                logentry['user'] = self._get_user_info(log)
 
-                    # remember last appended message uid
-                    if log['event'] == 'MessageAppend' and log.has_key('uidset'):
-                        last_append_uid = int(log['uidset'])
-
-                    # compose log entry to return
-                    logentry = {
-                        'rev': int(log['revision']) if log.has_key('revision') else None,
-                        'op': event_op_map.get(log['event'], 'UNKNOWN'),
-                        'mailbox': folder_names.get(log['folder_id'], None)
-                    }
-                    try:
-                        timestamp = parse(log['@timestamp'])
-                        logentry['date'] = datetime.datetime.strftime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-                    except:
-                        logentry['date'] = log['@timestamp']
-
-                    logentry['user'] = self._get_user_info(log)
-
-                    result.append(logentry)
+                result.append(logentry)
 
         return result
 
@@ -269,17 +195,11 @@ class KolabObject(object):
             Resovle the given username to the corresponding nsuniqueid from LDAP
         """
         # find existing entry in our storage backend
-        result = self.storage.select(
-            [ ('user', '=', user) ],
-            index='objects',
-            doctype='user',
-            sortby='@timestamp:desc',
-            limit=1
-        )
+        result = self.storage.get_user(username=user)
 
-        if result and result['total'] > 0:
+        if result and result.has_key('id'):
             # TODO: cache this lookup in memory?
-            return result['hits'][0]['_id']
+            return result['id']
 
         # fall-back: return md5 sum of the username to make usernames work as fields/keys in elasticsearch
         return hashlib.md5(user).hexdigest()
@@ -290,7 +210,7 @@ class KolabObject(object):
         """
         if log.has_key('user_id'):
             # get real user name from log['user_id']
-            user = self.storage.get(log['user_id'], index='objects', doctype='user')
+            user = self.storage.get_user(id=log['user_id'])
             if user is not None:
                 return "%(cn)s <%(user)s>" % user
 
@@ -302,6 +222,48 @@ class KolabObject(object):
             return log['headers']['From'][0]
 
         return 'unknown'
+
+    def _resolve_mailbox_uri(self, mailbox):
+        """
+            Convert the given mailbox string into an absolute URI
+            regarding the context of the requesting user.
+        """
+        # this requires a user context
+        if not self.env.has_key('REQUEST_USER') or not self.env['REQUEST_USER']:
+            return mailbox
+
+        if mailbox is None:
+            return None
+
+        domain = ''
+        user = self.env['REQUEST_USER']
+        if '@' in user:
+            (user,_domain) = user.split('@', 1)
+            domain = '@' + _domain
+
+        owner = user
+        path = '/' + mailbox
+
+        # TODO: make this configurable or read from IMAP
+        shared_prefix = 'Shared Folders/'
+        others_prefix = 'Other Users/'
+        imap_delimiter = '/'
+
+        # case: shared folder
+        if mailbox.startswith(shared_prefix):
+            return mailbox[len(shared_prefix):] + domain
+
+        # case: other users folder
+        if mailbox.startswith(others_prefix):
+            (owner, subpath) = mailbox[len(others_prefix):].split(imap_delimiter, 1)
+            path = imap_delimiter + subpath
+
+        if mailbox.upper() == 'INBOX':
+            path = ''
+
+        # default: personal namespace folder
+        return 'user/' + owner + path + domain
+
 
 
 #####  Utility functions

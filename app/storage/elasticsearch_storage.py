@@ -37,6 +37,120 @@ class ElasticseachStorage(AbstractStorage):
 
         self.es = elasticsearch.Elasticsearch(elasticsearch_address)
 
+
+    def get_user(self, id=None, username=None):
+        """
+            API for resolving usernames and reading user info
+        """
+        # get user by ID
+        if id is not None:
+            log.debug("ES get user by ID: %s" % (id), level=8)
+            return self.get(id, index='objects', doctype='user')
+
+        # find existing entry in our storage backend
+        result = self.select(
+            [ ('user', '=', user) ],
+            index='objects',
+            doctype='user',
+            sortby='@timestamp:desc',
+            limit=1
+        )
+
+        log.debug("ES get user by name: %s; %r" % (username, result), level=8)
+
+        if result and result['total'] > 0:
+            return self._transform_result(result['hits'][0])
+
+        return None
+
+    def get_folder(self, mailbox=None, user=None):
+        """
+            API for finding an IMAP folder record
+        """
+        # FIXME: revisit this implementation for new storage layout
+        # FIXME: check ACL of this folder in regards of the given user
+
+        result = self.select(
+            [ ('uri', '=', mailbox) ],
+            index='objects',
+            doctype='folder',
+            sortby='@timestamp:desc',
+            limit=1
+        )
+
+        if result and result['total'] > 0:
+            return self._transform_result(result['hits'][0])
+
+        return None
+
+    def get_events(self, msguid, objuid, mailbox, limit=None):
+        """
+            API for querying event notifications
+        """
+        # FIXME: this only fetches events from the given mailbox!
+        # TODO: resolve this object trail through all folders, starting with the current one
+        folders = []
+        folder = mailbox if isinstance(mailbox, dict) else self.get_folder(mailbox)
+
+        if folder is not None:
+            folders.append(folder)
+
+        if len(folders) > 0:
+            result = []
+            folder_ids = [x['id'] for x in folders]
+            folder_names = dict((x['id'],x['name']) for x in folders)
+
+            # set sorting and resultset size
+            sortcol = '@timestamp'
+            if limit is not None and limit < 0:
+                sortcol = sortcol + ':desc'
+                limit = abs(limit)
+
+            # search for events related to the given uid and the permitted folders
+            eventlog = self.storage.select(
+                query=[
+                    ('headers.Subject', '=', objuid),
+                    ('folder_id', '=', folder_ids)
+                ],
+                index='logstash-*',
+                doctype='logs',
+                sortby=sortcol,
+                fields='event,revision,headers,uidset,folder_id,user,user_id,@timestamp',
+                limit=limit
+            )
+
+            if eventlog and eventlog['total'] > 0:
+                result = eventlog['hits']
+
+            return result
+
+        return None
+
+    def get_revision(self, objuid, mailbox, msguid, rev):
+        """
+            API to get a certain revision of a stored object
+        """
+        folder = mailbox if isinstance(mailbox, dict) else self.get_folder(mailbox)
+
+        # retrieve the log entry matching the given uid and revision
+        if folder is not None:
+            results = self.storage.select(
+                query=[
+                    ('headers.Subject', '=', uid),
+                    ('folder_id', '=', folder['id']),
+                    ('revision', '=', rev)
+                ],
+                index='logstash-*',
+                doctype='logs',
+                fields='event,revision,uidset,folder_id,message',
+                limit=1
+            )
+
+            if results and results['total'] > 0:
+                return results['hits'][0]:
+
+        return None
+
     def get(self, key, index, doctype=None, fields=None, **kw):
         """
             Standard API for accessing key/value storage
@@ -150,9 +264,13 @@ class ElasticseachStorage(AbstractStorage):
             Turn an elasticsearch result item into a simple dict
         """
         result = res['_source'] if res.has_key('_source') else dict()
-        result['_id'] = res['_id']
+        result['id'] = res['_id']
         result['_index'] = res['_index']
         result['_doctype'] = res['_type']
         result['_score'] = res['_score']
+
+        if result.has_key('@timestamp'):
+            result['timestamp'] = result['@timestamp']
+            result.pop('@timestamp', None)
 
         return result

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2014 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2014-2015 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Thomas Bruederli <bruederli at kolabsys.com>
 #
@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+
 
 class AbstractStorage(object):
     """
@@ -62,12 +63,70 @@ class AbstractStorage(object):
         """
         return None
 
+    def get_user(self, id=None, username=None):
+        """
+            API for resolving usernames and reading user info:
+
+            @param id:       Unique identifier for a user record
+            @param username: Non-unique username to resolve
+        """
+        return None
+
+    def get_folder(self, mailbox=None, user=None):
+        """
+            API for finding an IMAP folder record
+
+            @param mailbox:  Mailbox name
+            @param user:     User context
+        """
+        return None
+
+    def get_events(self, objuid, mailbox, msguid, limit=None):
+        """
+            API for querying event notifications
+
+            @param objuid:   Groupware object UID
+            @param mailbox:  IMAP folder that message/object currently resides in
+            @param msguid:   IMAP message UID (the last known)
+            @param limit:    Number of records to return (negative number for most recent first)
+        """
+        return None
+
+    def get_revision(self, objuid, mailbox, msguid, rev):
+        """
+            API to get a certain revision of a stored object
+
+            @param objuid:   Groupware object UID
+            @param mailbox:  IMAP folder that message/object currently resides in
+            @param msguid:   IMAP message UID (the last known)
+            @param rev:      Revision identifier
+        """
+        return None
+
+
+def StorageException(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
+
 
 def factory():
     """
         Factory function to return the right storage backend instance
     """
-    # TODO: make storage backend configurable
-    # currently Elasticsearch is the only backend available
-    from elasticsearch_storage import ElasticseachStorage
-    return ElasticseachStorage()
+    from flask import current_app
+    conf = current_app.config
+
+    if conf['STORAGE'].has_key('backend'):
+        backend = conf['STORAGE']['backend']
+    else:
+        backend = 'riak'
+
+    if backend == 'elasticsearch':
+        from elasticsearch_storage import ElasticseachStorage
+        return ElasticseachStorage()
+
+    elif backend == 'riak':
+        from riak_storage import RiakStorage
+        return RiakStorage()
+
+    raise StorageException("Invalid backend %r specified" % (backend))

@@ -36,7 +36,7 @@ def before_request():
     if request.method == 'POST':
         if hasattr(request, 'get_json'):
             api.input.update(request.get_json(True, True))
-        else:
+        elif isinstance(request.json, dict):
             api.input.update(request.json)
 
         rpc.reqid = api.input['id'] if api.input.has_key('id') else None

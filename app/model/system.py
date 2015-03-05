@@ -30,8 +30,9 @@ class System(object):
         self.config = current_app.config
 
     def keygen(self, salt='salt'):
+        print self.env
         ip = self.env['REMOTE_ADDR'] if self.env.has_key('REMOTE_ADDR') else '::1'
-        user = self.env['REQUEST_USER'] if self.env.has_key('REQUEST_USER') else 'anonymous'
+        user = str(self.env['REQUEST_USER']) if self.env.has_key('REQUEST_USER') else 'anonymous'
         rand = str(uuid.uuid4())
         dk = hashlib.sha256(ip + rand + user + salt).digest()
         exp = datetime.datetime.utcnow().replace(microsecond=0, tzinfo=pytz.utc) + datetime.timedelta(hours=2)
