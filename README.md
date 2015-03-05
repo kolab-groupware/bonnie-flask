@@ -12,14 +12,20 @@ Install and Run
 
 Install Flask and some of the used modules:
 ```
-$ pip install flask flask-bootstrap flask-httpauth flask-sqlalchemy flask-login flask-script flask-wtf flask-babel
+$ pip install flask flask-bootstrap flask-httpauth flask-sqlalchemy flask-login flask-script flask-wtf flask-babel flask-httpauth itsdangerous
 ```
 
 or on a CentOS/RHEL Kolab development box:
 ```
 $ yum -y install python-flask python-flask-sqlalchemy python-pip python-argparse
-$ pip install flask-bootstrap flask-script flask-wtf flask-babel
+$ pip install flask-bootstrap flask-login flask-script flask-wtf flask-babel flask-httpauth itsdangerous
 $ pip install --upgrade sqlalchemy
+```
+
+If using the [Riak](http://basho.com/riak/) storage backend, also install the Riak Python client library:
+```
+$ yum -y install python-devel libffi-devel
+$ pip install riak
 ```
 
 Get the app:
@@ -33,7 +39,7 @@ Initialize the database and create users for API access and administration:
 ```
 $ python run.py shell
 >>> db.create_all()
->>> admin = User(username='admin', permissions=Permission.WEB_ACCESS|Permission.ADMINISTATOR, password='Welcome2KolabSystems', secret='none')
+>>> admin = User(username='admin', permissions=Permission.WEB_ACCESS|Permission.ADMINISTRATOR, password='Welcome2KolabSystems', secret='none')
 >>> webclient = User(username='webclient', permissions=Permission.API_ACCESS, password='Welcome2KolabSystems', secret='8431f19170e7f90d4107bf4b169baf')
 >>> db.session.add(admin)
 >>> db.session.add(webclient)
