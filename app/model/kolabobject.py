@@ -174,7 +174,7 @@ class KolabObject(object):
 
                 # compose log entry to return
                 logentry = {
-                    'rev': int(log['revision']) if log.has_key('revision') else None,
+                    'rev': log.get('revision', None),
                     'op': event_op_map.get(log['event'], 'UNKNOWN'),
                     'mailbox': log.get('folder_id', None)
                 }
@@ -206,22 +206,22 @@ class KolabObject(object):
         # fall-back: return md5 sum of the username to make usernames work as fields/keys in elasticsearch
         return hashlib.md5(user).hexdigest()
 
-    def _get_user_info(self, log):
+    def _get_user_info(self, rec):
         """
             Return user information (name, email) related to the given log entry
         """
-        if log.has_key('user_id'):
-            # get real user name from log['user_id']
-            user = self.storage.get_user(id=log['user_id'])
+        if rec.has_key('user_id'):
+            # get real user name from rec['user_id']
+            user = self.storage.get_user(id=rec['user_id'])
             if user is not None:
                 return "%(cn)s <%(user)s>" % user
 
-        if log.has_key('user'):
-            return log['user']
+        if rec.has_key('user'):
+            return rec['user']
 
-        elif log['event'] == 'MessageAppend' and log['headers'].has_key('From'):
+        elif rec['event'] == 'MessageAppend' and rec['headers'].has_key('From'):
             # fallback to message headers
-            return log['headers']['From'][0]
+            return rec['headers']['From'][0]
 
         return 'unknown'
 

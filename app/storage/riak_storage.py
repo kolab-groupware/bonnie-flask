@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import logging
+import logging, datetime
 
 from riak import RiakClient
 from riak.mapreduce import RiakKeyFilter, RiakMapReduce
@@ -208,24 +208,28 @@ class RiakStorage(AbstractStorage):
             log.info("Folder %r not found in storage", mailbox)
             return None;
 
-        object_message_keys = self._get_timeline_keys(objuid, folder['id'])
+        object_event_keys = self._get_timeline_keys(objuid, folder['id'])
 
         # sanity check with msguid
-        if msguid and not 'message::%s::%s' % (folder['id'], str(msguid)) in object_message_keys:
-            log.info("Sanity check failed: requested msguid %r not in timeline keys %r", msguid, object_message_keys)
+        if msguid is not None:
+            key_prefix = 'message::%s::%s' % (folder['id'], str(msguid))
+            if len([k for k in object_event_keys if k.startswith(key_prefix)]) == 0:
+                log.warning("Sanity check failed: requested msguid %r not in timeline keys %r", msguid, object_event_keys)
+                # TODO: abort?
 
         # 3. read each corresponding entry from imap-events
         filters = None
-        for key in object_message_keys:
+        for key in object_event_keys:
             f = RiakKeyFilter().starts_with(key)
             if filters is None:
                 filters = f
             else:
                 filters |= f
 
-        log.debug("Querying imap-events for keys %r", object_message_keys)
+        log.debug("Querying imap-events for keys %r", object_event_keys)
 
         if filters is not None:
+            # TODO: query directly using key?
             results = self._mapreduce_keyfilter('imap-events', filters, sortby='timestamp', limit=limit)
             return [self._transform_result(x, 'imap-events') for x in results] if results is not None else results
 
@@ -233,27 +237,55 @@ class RiakStorage(AbstractStorage):
 
     def _get_timeline_keys(self, objuid, folder_id):
         """
-            Helper method to fetch timeline keys recirsively following moves accross folders
+            Helper method to fetch timeline keys recursively following moves accross folders
         """
-        object_message_keys = []
+        object_event_keys = []
 
         results = self._get_keyfilter('imap-message-timeline', starts_with='message::' + folder_id + '::', ends_with='::' + objuid)
         if not results or len(results) == 0:
             log.info("No timeline entry found for %r in folder %r", objuid, folder_id)
-            return object_message_keys;
+            return object_event_keys;
 
         for rec in results:
-            key = '::'.join(rec['_key'].split('::')[0:3])
-            object_message_keys.append(key)
+            key = '::'.join(rec['_key'].split('::', 4)[0:4])
+            object_event_keys.append(key)
             # TODO: follow moves and add more <folder-id>::<message-id> tuples to our list
             # by calling self._get_timeline_keys(objuid, folder['id']) recursively
 
-        return object_message_keys
+        return object_event_keys
 
     def get_revision(self, objuid, mailbox, msguid, rev):
         """
             API to get a certain revision of a stored object
         """
+        # resolve mailbox first
+        folder = self.get_folder(mailbox)
+        if folder is None:
+            log.info("Folder %r not found in storage", mailbox)
+            return None;
+
+        # expand revision into the ISO timestamp format
+        try:
+            ts = datetime.datetime.strptime(str(rev), "%Y%m%d%H%M%S%f")
+            timestamp = ts.strftime("%Y-%m-%dT%H:%M:%S.%f")[0:23]
+        except Exception, e:
+            log.warning("Invalid revision %r for object %r: %r", rev, objuid, e)
+            return None
+
+        # query message-timeline entries starting at peak with current folder (aka mailbox)
+        object_event_keys = self._get_timeline_keys(objuid, folder['id'])
+
+        # get the one key matching the revision timestamp
+        keys = [k for k in object_event_keys if '::' + timestamp in k]
+        log.debug("Get revision entry %r from candidates %r", timestamp, object_event_keys)
+
+        if len(keys) == 1:
+            result = self.get(keys[0], 'imap-events')
+            if result is not None:
+                return self._transform_result(result, 'imap-events')
+        else:
+            log.info("Revision timestamp %r doesn't match a single key from: %r", timestamp, object_event_keys)
+
         return None
 
 
@@ -263,12 +295,17 @@ class RiakStorage(AbstractStorage):
         """
         result['_index'] = index
 
-        # derrive revision from timestamp
+        # derrive (numeric) revision from timestamp
         if result.has_key('timestamp') and result.get('event','') in ['MessageAppend','MessageMove']:
             try:
                 ts = parse_date(result['timestamp'])
-                result['revision'] = int(float(ts.strftime("%s.%f")) * 10)
+                result['revision'] = ts.strftime("%Y%m%d%H%M%S%f")[0:17]
             except:
                 pass
+
+        # compose message body by prepending some headers to satisfy the mime-message parser
+        if result.has_key('body') and result.has_key('headers'):
+            result['message'] = "MIME-Version: 1.0\r\nContent-Type: " + result['headers'].get('Content-Type', '') + "\r\n\r\n" + result['body']
+            del result['body']
 
         return result
