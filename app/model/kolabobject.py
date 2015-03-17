@@ -45,7 +45,7 @@ class KolabObject(object):
         self.config = current_app.config
         self.storage = storage.factory()
 
-    def created(self, uid, mailbox=None, msguid=None):
+    def created(self, uid, mailbox, msguid=None):
         """
             Provide created date and user
         """
@@ -59,7 +59,7 @@ class KolabObject(object):
 
         return False
 
-    def lastmodified(self, uid, mailbox=None, msguid=None):
+    def lastmodified(self, uid, mailbox, msguid=None):
         """
             Provide last change information
         """
@@ -73,7 +73,7 @@ class KolabObject(object):
 
         return False
 
-    def changelog(self, uid, mailbox=None, msguid=None):
+    def changelog(self, uid, mailbox, msguid=None):
         """
             Full changelog
         """
@@ -83,7 +83,7 @@ class KolabObject(object):
 
         return False
 
-    def get(self, uid, rev, mailbox=None, msguid=None):
+    def get(self, uid, rev, mailbox, msguid=None):
         """
             Retrieve an old revision
         """
@@ -114,7 +114,7 @@ class KolabObject(object):
 
         return obj
 
-    def diff(self, uid, rev, mailbox=None, msguid=None):
+    def diff(self, uid, rev, mailbox, msguid=None):
         """
             Compare two revisions of an object and return a list of property changes
         """
@@ -176,13 +176,15 @@ class KolabObject(object):
                 logentry = {
                     'rev': int(log['revision']) if log.has_key('revision') else None,
                     'op': event_op_map.get(log['event'], 'UNKNOWN'),
-                    'mailbox': folder_names.get(log['folder_id'], None)
+                    'mailbox': log.get('folder_id', None)
                 }
                 try:
                     timestamp = parse_date(log['timestamp'])
                     logentry['date'] = datetime.datetime.strftime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
                 except:
                     logentry['date'] = log['timestamp']
+
+                # TODO: translate mailbox identifier back to a relative folder path?
 
                 logentry['user'] = self._get_user_info(log)
 

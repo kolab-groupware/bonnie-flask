@@ -80,6 +80,9 @@ def _exec_api_call(method, params):
             try:
                 return getattr(obj, func)(**params)
 
+            except TypeError, e:
+                log.info(traceback.format_exc())
+                raise JsonRPCException(-32602, "Invalid params")
             except Exception, e:
                 log.info(traceback.format_exc())
                 raise JsonRPCException(-32603, str(e))
