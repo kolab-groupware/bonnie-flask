@@ -58,7 +58,7 @@ class TestStorage(unittest.TestCase):
         self.assertEqual(events[1]['uidset'], '4')
         self.assertEqual(events[2]['event'], 'MessageTrash')
         self.assertEqual(events[2]['uidset'], '3')
-        print json.dumps(events, indent=4)
+        #print json.dumps(events, indent=4)
 
     def test_025_get_revision(self):
         strg = storage.factory()

@@ -235,7 +235,7 @@ class RiakStorage(AbstractStorage):
 
         return None
 
-    def _get_timeline_keys(self, objuid, folder_id):
+    def _get_timeline_keys(self, objuid, folder_id, length=3):
         """
             Helper method to fetch timeline keys recursively following moves accross folders
         """
@@ -247,10 +247,10 @@ class RiakStorage(AbstractStorage):
             return object_event_keys;
 
         for rec in results:
-            key = '::'.join(rec['_key'].split('::', 4)[0:4])
+            key = '::'.join(rec['_key'].split('::', 4)[0:length])
             object_event_keys.append(key)
             # TODO: follow moves and add more <folder-id>::<message-id> tuples to our list
-            # by calling self._get_timeline_keys(objuid, folder['id']) recursively
+            # by calling self._get_timeline_keys(objuid, folder['id'], length) recursively
 
         return object_event_keys
 
@@ -273,7 +273,7 @@ class RiakStorage(AbstractStorage):
             return None
 
         # query message-timeline entries starting at peak with current folder (aka mailbox)
-        object_event_keys = self._get_timeline_keys(objuid, folder['id'])
+        object_event_keys = self._get_timeline_keys(objuid, folder['id'], length=4)
 
         # get the one key matching the revision timestamp
         keys = [k for k in object_event_keys if '::' + timestamp in k]
