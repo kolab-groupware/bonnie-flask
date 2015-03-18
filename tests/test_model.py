@@ -26,3 +26,15 @@ class TestModel(unittest.TestCase):
         self.assertEqual(ko._resolve_mailbox_uri('Other Users/lucy.meyer/Calendar/Personal'), 'user/lucy.meyer/Calendar/Personal@example.org')
         self.assertEqual(ko._resolve_mailbox_uri('Shared Folders/shared/Resource Room 101'), 'shared/Resource Room 101@example.org')
 
+        self.assertEqual(ko._resolve_mailbox_uri('user/john.doe/Calendar@example.org'), 'user/john.doe/Calendar@example.org')
+        self.assertEqual(ko._resolve_mailbox_uri('shared/Resource Room 101@example.org'), 'shared/Resource Room 101@example.org')
+
+    def test_kolabobject_convert_mailbox_uri(self):
+        env = { 'REQUEST_USER': 'john.doe@example.org' }
+        ko = KolabObject(env)
+
+        self.assertEqual(ko._convert_mailbox_uri(None), None)
+        self.assertEqual(ko._convert_mailbox_uri('user/john.doe@example.org'), 'INBOX')
+        self.assertEqual(ko._convert_mailbox_uri('user/john.doe/Calendar@example.org'), 'Calendar')
+        self.assertEqual(ko._convert_mailbox_uri('user/lucy.meyer/Calendar/Personal@example.org'), 'Other Users/lucy.meyer/Calendar/Personal')
+        self.assertEqual(ko._convert_mailbox_uri('shared/Resource Room 101@example.org'), 'Shared Folders/shared/Resource Room 101')

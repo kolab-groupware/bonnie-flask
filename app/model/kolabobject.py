@@ -187,7 +187,7 @@ class KolabObject(object):
                 logentry = {
                     'rev': log.get('revision', None),
                     'op': event_op_map.get(log['event'], 'UNKNOWN'),
-                    'mailbox': log.get('folder_id', None)
+                    'mailbox': self._convert_mailbox_uri(log.get('mailbox', None))
                 }
                 try:
                     timestamp = parse_date(log['timestamp'])
@@ -248,6 +248,10 @@ class KolabObject(object):
         if mailbox is None:
             return None
 
+        # mailbox already is an absolute path
+        if mailbox.startswith('user/') or mailbox.startswith('shared/'):
+            return mailbox
+
         domain = ''
         user = self.env['REQUEST_USER']
         if '@' in user:
@@ -277,6 +281,48 @@ class KolabObject(object):
         # default: personal namespace folder
         return 'user/' + owner + path + domain
 
+    def _convert_mailbox_uri(self, mailbox):
+        """
+            Convert the given absolute mailbox URI into a relative folder
+            name regarding the context of the requesting user.
+        """
+        if mailbox is None:
+            return None
+
+        # this requires a user context
+        request_user = str(self.env.get('REQUEST_USER', '')).lower()
+
+        # TODO: make this configurable or read from IMAP
+        shared_prefix = 'Shared Folders'
+        others_prefix = 'Other Users'
+        imap_delimiter = '/'
+        domain = ''
+
+        if '@' in mailbox:
+            (folder,domain) = mailbox.split('@', 1)
+        else:
+            folder = mailbox
+
+        if folder.startswith('user/'):
+            parts = folder.split(imap_delimiter, 2)
+            if len(parts) > 2:
+                (prefix,user,path) = parts
+            else:
+                (prefix,user) = parts
+                path = ''
+
+            if len(path) == 0:
+                path = 'INBOX'
+
+            if not (user + '@' + domain).lower() == request_user:
+                folder = imap_delimiter.join([others_prefix, user, path])
+            else:
+                folder = path
+
+        elif folder.startswith('shared/'):
+            folder = imap_delimiter.join([shared_prefix, folder])
+
+        return folder
 
 
 #####  Utility functions
