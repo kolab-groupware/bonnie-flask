@@ -115,13 +115,12 @@ class KolabObject(object):
 
         return obj
 
-    def diff(self, uid, rev, mailbox, msguid=None):
+    def diff(self, uid, rev1, rev2, mailbox, msguid=None):
         """
             Compare two revisions of an object and return a list of property changes
         """
-        r = str(rev).split(':')
-        rev_old = int(r[0])
-        rev_new = int(r[-1])
+        rev_old = rev1
+        rev_new = rev2
 
         if rev_old >= rev_new:
             raise ValueError("Invalid argument 'rev'")

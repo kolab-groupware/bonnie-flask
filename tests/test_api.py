@@ -188,7 +188,8 @@ class TestAPI(unittest.TestCase):
         diff = self._api_request('john.doe@example.org', 'event.diff',
             uid='5A637BE7895D785671E1732356E65CC8-A4BF5BBB9FEAA271',
             mailbox='Calendar',
-            rev=rev1+':'+rev2
+            rev1=rev1,
+            rev2=rev2
         )
         # print json.dumps(diff, indent=4)
         self.assertIsInstance(diff, dict)
