@@ -231,7 +231,8 @@ class RiakStorage(AbstractStorage):
         if filters is not None:
             # TODO: query directly using key?
             results = self._mapreduce_keyfilter('imap-events', filters, sortby='timestamp', limit=limit)
-            return [self._transform_result(x, 'imap-events') for x in results] if results is not None else results
+            return [self._transform_result(x, 'imap-events') for x in results if x.has_key('event') and not x['event'] == 'MessageExpunge'] \
+                 if results is not None else results
 
         return None
 
@@ -288,10 +289,21 @@ class RiakStorage(AbstractStorage):
 
         return None
 
+    def get_message_data(self, rec):
+        """
+            Getter for the full IMAP message payload for the given event record
+            as previously fetched with get_events() or get_revision()
+        """
+        # compose the full message payload by contcatenating the message headers with the body part
+        if rec.has_key('body') and rec.has_key('headers'):
+            # TODO: encode header values?
+            return "\r\n".join([h + ": " + v for (h, v) in rec['headers'].iteritems()]) + "\r\n\r\n" + rec['body']
+
+        return None
 
     def _transform_result(self, result, index):
         """
-            Turn an elasticsearch result item into a simple dict
+            Turn an imap-event record into a dict to match the storage API
         """
         result['_index'] = index
 
@@ -302,10 +314,5 @@ class RiakStorage(AbstractStorage):
                 result['revision'] = ts.strftime("%Y%m%d%H%M%S%f")[0:17]
             except:
                 pass
-
-        # compose message body by prepending some headers to satisfy the mime-message parser
-        if result.has_key('body') and result.has_key('headers'):
-            result['message'] = "MIME-Version: 1.0\r\nContent-Type: " + result['headers'].get('Content-Type', '') + "\r\n\r\n" + result['body']
-            del result['body']
 
         return result

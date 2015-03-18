@@ -102,9 +102,10 @@ class KolabObject(object):
 
         rec = self.storage.get_revision(uid, self._resolve_mailbox_uri(mailbox), msguid, rev)
 
-        if rec is not None and rec.has_key('message'):
+        if rec is not None:
+            raw = self.storage.get_message_data(rec)
             try:
-                message = message_from_string(rec['message'].encode('utf8','replace'))
+                message = message_from_string(raw.encode('utf8','replace'))
                 obj = self._object_from_message(message) or False
             except Exception, e:
                 log.warning("Failed to parse mime message for UID %s @%s: %r", uid, rev, e)
@@ -134,6 +135,16 @@ class KolabObject(object):
             raise ValueError("Object %s @rev:%d not found" % (uid, rev_new))
 
         return dict(uid=uid, rev=rev_new, changes=convert2primitives(compute_diff(old.to_dict(), new.to_dict(), True)))
+
+    def rawdata(self, uid, mailbox, rev, msguid=None):
+        """
+            Get the full message payload of an old revision
+        """
+        rec = self.storage.get_revision(uid, self._resolve_mailbox_uri(mailbox), msguid, rev)
+        if rec is not None:
+            return self.storage.get_message_data(rec)
+
+        return False
 
     def _object_from_message(self, message):
         """

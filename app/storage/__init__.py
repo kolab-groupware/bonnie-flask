@@ -103,6 +103,13 @@ class AbstractStorage(object):
         """
         return None
 
+    def get_message_data(self, rec):
+        """
+            Getter for the full IMAP message payload for the given event record
+            as previously fetched with get_events() or get_revision()
+        """
+        return rec.get('message', None)
+
 
 def StorageException(Exception):
     def __init__(self, message):
