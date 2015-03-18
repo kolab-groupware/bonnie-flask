@@ -50,18 +50,26 @@ class TestStorage(unittest.TestCase):
 
     def test_020_get_events(self):
         strg = storage.factory()
-        mailbox = 'user/john.doe/Calendar@example.org'
-        events = strg.get_events('6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271', mailbox, 4)
-        self.assertEqual(len(events), 3)
+        oldmailbox = 'user/john.doe/Calendar@example.org'
+        mailbox = 'user/john.doe/Testing@example.org'
+        events = strg.get_events('6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271', mailbox, 2)
+        self.assertEqual(len(events), 6)
         self.assertEqual(events[0]['event'], 'MessageAppend')
         self.assertEqual(events[0]['uidset'], '3')
-        self.assertEqual(events[0]['mailbox'], mailbox)
+        self.assertEqual(events[0]['mailbox'], oldmailbox)
         self.assertEqual(events[1]['event'], 'MessageAppend')
         self.assertEqual(events[1]['uidset'], '4')
-        self.assertEqual(events[1]['mailbox'], mailbox)
+        self.assertEqual(events[1]['mailbox'], oldmailbox)
         self.assertEqual(events[2]['event'], 'MessageTrash')
         self.assertEqual(events[2]['uidset'], '3')
-        #print json.dumps(events, indent=4)
+        self.assertEqual(events[3]['event'], 'MessageMove')
+        self.assertEqual(events[3]['uidset'], '1')
+        self.assertEqual(events[4]['event'], 'MessageAppend')
+        self.assertEqual(events[4]['uidset'], '2')
+        self.assertEqual(events[4]['mailbox'], mailbox)
+        self.assertEqual(events[5]['event'], 'MessageTrash')
+        self.assertEqual(events[5]['uidset'], '1')
+        self.assertEqual(events[5]['mailbox'], mailbox)
 
     def test_025_get_revision(self):
         strg = storage.factory()

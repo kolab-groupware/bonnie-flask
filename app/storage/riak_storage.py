@@ -250,8 +250,12 @@ class RiakStorage(AbstractStorage):
         for rec in results:
             key = '::'.join(rec['_key'].split('::', 4)[0:length])
             object_event_keys.append(key)
-            # TODO: follow moves and add more <folder-id>::<message-id> tuples to our list
-            # by calling self._get_timeline_keys(objuid, folder['id'], length) recursively
+
+            # follow moves and add more <folder-id>::<message-id> tuples to our list
+            if rec.has_key('history') and isinstance(rec['history'], dict) and rec['history'].has_key('imap'):
+                old_folder_id = rec['history']['imap'].get('previous_folder', None)
+                if old_folder_id:
+                    object_event_keys += self._get_timeline_keys(objuid, old_folder_id, length)
 
         return object_event_keys
 
@@ -294,12 +298,7 @@ class RiakStorage(AbstractStorage):
             Getter for the full IMAP message payload for the given event record
             as previously fetched with get_events() or get_revision()
         """
-        # compose the full message payload by contcatenating the message headers with the body part
-        if rec.has_key('body') and rec.has_key('headers'):
-            # TODO: encode header values?
-            return "\r\n".join([h + ": " + v for (h, v) in rec['headers'].iteritems()]) + "\r\n\r\n" + rec['body']
-
-        return None
+        return rec.get('message', None)
 
     def _transform_result(self, result, index):
         """

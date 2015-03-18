@@ -133,7 +133,7 @@ class KolabObject(object):
         if new == False:
             raise ValueError("Object %s @rev:%d not found" % (uid, rev_new))
 
-        return dict(uid=uid, rev=rev_new, changes=convert2primitives(compute_diff(old.to_dict(), new.to_dict(), True)))
+        return dict(uid=uid, rev=rev_new, changes=convert2primitives(compute_diff(old.to_dict(), new.to_dict(), False)))
 
     def rawdata(self, uid, mailbox, rev, msguid=None):
         """

@@ -103,8 +103,8 @@ class TestAPI(unittest.TestCase):
     def test_003_created_lastmodified(self):
         created = self._api_request('john.doe@example.org', 'event.created',
             uid='6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271',
-            mailbox='Calendar',
-            msguid=4
+            mailbox='Testing',
+            msguid=2
         )
         self.assertIsInstance(created, dict)
         self.assertTrue(created.has_key('date'))
@@ -114,7 +114,7 @@ class TestAPI(unittest.TestCase):
 
         changed = self._api_request('john.doe@example.org', 'event.lastmodified',
             uid='6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271',
-            mailbox='Calendar'
+            mailbox='Testing'
         )
         self.assertIsInstance(changed, dict)
         self.assertTrue(changed.has_key('rev'))
