@@ -35,7 +35,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "bodyStructure": "(...)",
     "service": "imap",
     "modseq": 2,
-    "timestamp": "2015-03-04T09:11:39.711Z",
+    "timestamp": "2015-03-04T09:11:39.711+00:00",
+    "timestamp_utc": "2015-03-04T09:11:39.711Z",
     "pid": 28071,
     "vnd.cmu.sessionId": "kolab34.example.org-28071-1425478299-1-14630748386624877725",
     "messages": 1,
@@ -52,7 +53,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
         "From": "john.doe@example.org",
         "To": "john.doe@example.org",
         "X-Kolab-Type": "application/x-vnd.kolab.event"
-    }
+    },
+    "groupware_uid": "6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271"
 }'
 
 curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::3::2015-03-04T09:11:39.711Z::6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271" \
@@ -69,7 +71,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "bodyStructure": "(...)", 
     "service": "imap", 
     "modseq": 9, 
-    "timestamp": "2015-03-04T21:56:46.465Z", 
+    "timestamp": "2015-03-04T21:56:46.465+00:00", 
+    "timestamp_utc": "2015-03-04T21:56:46.465Z", 
     "pid": 981, 
     "vnd.cmu.sessionId": "kolab34.example.org-981-1425524206-1-5416454962879660084", 
     "messages": 2, 
@@ -87,7 +90,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
         "To": "john.doe@example.org",
         "X-Kolab-Mime-Version": "3.0",
         "X-Kolab-Type": "application/x-vnd.kolab.event"
-    }
+    },
+    "groupware_uid": "6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271"
 }'
 
 curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::4::2015-03-04T21:56:46.465Z::6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271" \
@@ -102,7 +106,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "user_id": "55475201-bdc211e4-881c96ef-f248ab46",
     "service": "imap",
     "modseq": 10,
-    "timestamp": "2015-03-04T21:56:46.500Z",
+    "timestamp": "2015-03-04T21:56:46.500+00:00",
+    "timestamp_utc": "2015-03-04T21:56:46.500Z",
     "pid": 981,
     "vnd.cmu.sessionId": "kolab34.example.org-981-1425524206-1-5416454962879660084",
     "messages": 2,
@@ -110,14 +115,7 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "uidnext": 5,
     "user": "john.doe@example.org",
     "vnd.cmu.unseenMessages": 2,
-    "vnd.cmu.midset": [ "NIL" ],
-    "headers": {
-        "Subject": "6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271",
-        "From": "john.doe@example.org",
-        "To": "john.doe@example.org",
-        "X-Kolab-Mime-Version": "3.0",
-        "X-Kolab-Type": "application/x-vnd.kolab.event"
-    }
+    "vnd.cmu.midset": [ "NIL" ]
 }'
 
 curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::21::2015-03-17T15:58:43.016000Z" \
@@ -144,7 +142,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "modseq": 57,
     "pid": 1579,
     "service": "imap",
-    "timestamp": "2015-03-17T15:58:43.016000Z",
+    "timestamp": "2015-03-17T15:58:43.016+00:00",
+    "timestamp_utc": "2015-03-17T15:58:43.016000Z",
     "uidnext": 22,
     "uri": "imap://john.doe@example.org@kolab34.example.org/Calendar;UIDVALIDITY=1424960330/;UID=21",
     "user": "john.doe@example.org",
@@ -154,7 +153,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
         "NIL"
     ],
     "vnd.cmu.sessionId": "kolab34.example.org-1579-1426607922-1-10050682032034970758",
-    "vnd.cmu.unseenMessages": 4
+    "vnd.cmu.unseenMessages": 4,
+    "groupware_uid": "5A637BE7895D785671E1732356E65CC8-A4BF5BBB9FEAA271"
 }'
 
 curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::21::2015-03-17T15:58:43.016000Z::5A637BE7895D785671E1732356E65CC8-A4BF5BBB9FEAA271" \
@@ -185,7 +185,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "modseq": 58,
     "pid": 7493,
     "service": "imap",
-    "timestamp": "2015-03-17T17:17:37.514000Z",
+    "timestamp": "2015-03-17T17:17:37.514+00:00",
+    "timestamp_utc": "2015-03-17T17:17:37.514000Z",
     "uidnext": 23,
     "uidset": "22",
     "uri": "imap://john.doe@example.org@kolab34.example.org/Calendar;UIDVALIDITY=1424960330/;UID=22",
@@ -196,7 +197,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
         "NIL"
     ],
     "vnd.cmu.sessionId": "kolab34.example.org-7493-1426612657-1-6878020795100368520",
-    "vnd.cmu.unseenMessages": 5
+    "vnd.cmu.unseenMessages": 5,
+    "groupware_uid": "5A637BE7895D785671E1732356E65CC8-A4BF5BBB9FEAA271"
 }'
 
 curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::22::2015-03-17T17:17:37.514000Z::5A637BE7895D785671E1732356E65CC8-A4BF5BBB9FEAA271" \
@@ -211,7 +213,8 @@ curl -XPUT "$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/keys/messa
     "modseq": 60,
     "pid": 7493,
     "service": "imap",
-    "timestamp": "2015-03-17T17:17:37.562000Z",
+    "timestamp": "2015-03-17T17:17:37.562+00:00",
+    "timestamp_utc": "2015-03-17T17:17:37.562000Z",
     "uidnext": 23,
     "uidset": "21",
     "uri": "imap://john.doe@example.org@kolab34.example.org/Calendar;UIDVALIDITY=1424960330",
@@ -232,7 +235,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "modseq": 59,
     "pid": 7493,
     "service": "imap",
-    "timestamp": "2015-03-17T17:17:37.554000Z",
+    "timestamp": "2015-03-17T17:17:37.554+00:00",
+    "timestamp_utc": "2015-03-17T17:17:37.554000Z",
     "uidnext": 23,
     "uidset": "21",
     "uri": "imap://john.doe@example.org@kolab34.example.org/Calendar;UIDVALIDITY=1424960330",
@@ -260,7 +264,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "oldMailboxID": "imap://john.doe@example.org@kolab34.example.org/Calendar;UIDVALIDITY=1424960330",
     "pid": 12489,
     "service": "imap",
-    "timestamp": "2015-03-18T04:13:31.158000Z",
+    "timestamp": "2015-03-18T04:13:31.158+00:00",
+    "timestamp_utc": "2015-03-18T04:13:31.158000Z",
     "uidnext": 2,
     "uidset": "1",
     "uri": "imap://john.doe@example.org@kolab34.example.org/Testing;UIDVALIDITY=1426651436",
@@ -281,7 +286,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     },
     "vnd.cmu.oldUidset": "4",
     "vnd.cmu.sessionId": "kolab34.example.org-12489-1426652010-1-1342732898036616806",
-    "vnd.cmu.unseenMessages": 1
+    "vnd.cmu.unseenMessages": 1,
+    "groupware_uid": "6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271"
 }'
 
 curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::fe0137f5-6828-474f-9cf6-fdf135123679::1::2015-03-18T04:13:31.158000Z::6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271" \
@@ -319,7 +325,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "modseq": 4,
     "pid": 12489,
     "service": "imap",
-    "timestamp": "2015-03-18T04:13:31.454000Z",
+    "timestamp": "2015-03-18T04:13:31.454+00:00",
+    "timestamp_utc": "2015-03-18T04:13:31.454000Z",
     "uidnext": 3,
     "uidset": "2",
     "uri": "imap://john.doe@example.org@kolab34.example.org/Testing;UIDVALIDITY=1426651436/;UID=2",
@@ -330,7 +337,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
         "NIL"
     ],
     "vnd.cmu.sessionId": "kolab34.example.org-12489-1426652010-1-1342732898036616806",
-    "vnd.cmu.unseenMessages": 2
+    "vnd.cmu.unseenMessages": 2,
+    "groupware_uid": "6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271"
 }'
 
 curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::fe0137f5-6828-474f-9cf6-fdf135123679::2::2015-03-18T04:13:31.454000Z::6EE0570E8CA21DDB67FC9ADE5EE38E7F-A4BF5BBB9FEAA271" \
@@ -345,7 +353,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "modseq": 5, 
     "pid": 12489, 
     "service": "imap", 
-    "timestamp": "2015-03-18T04:13:31.467000Z", 
+    "timestamp": "2015-03-18T04:13:31.467+00:00", 
+    "timestamp_utc": "2015-03-18T04:13:31.467000Z", 
     "uidnext": 3, 
     "uidset": "1", 
     "uri": "imap://john.doe@example.org@kolab34.example.org/Testing;UIDVALIDITY=1426651436", 
@@ -383,7 +392,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "modseq": 7,
     "pid": 12618,
     "service": "imap",
-    "timestamp": "2015-03-18T04:32:29.376000Z",
+    "timestamp": "2015-03-18T04:32:29.376+00:00",
+    "timestamp_utc": "2015-03-18T04:32:29.376000Z",
     "uidset": 3,
     "uidnext": 4,
     "uri": "imap://john.doe@example.org@kolab34.example.org/Testing;UIDVALIDITY=1426651436/;UID=3",
@@ -394,7 +404,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
         "NIL"
     ],
     "vnd.cmu.sessionId": "kolab34.example.org-12618-1426653149-1-11265804361548763525",
-    "vnd.cmu.unseenMessages": 2
+    "vnd.cmu.unseenMessages": 2,
+    "groupware_uid": "390582E807A257686D51A6BF87F342E9-A4BF5BBB9FEAA271"
 }'
 
 curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::fe0137f5-6828-474f-9cf6-fdf135123679::3::2015-03-18T04:32:29.376000Z::390582E807A257686D51A6BF87F342E9-A4BF5BBB9FEAA271" \
@@ -425,7 +436,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
     "modseq": 8,
     "pid": 12671,
     "service": "imap",
-    "timestamp": "2015-03-18T04:36:34.162000Z",
+    "timestamp": "2015-03-18T04:36:34.162+00:00",
+    "timestamp_utc": "2015-03-18T04:36:34.162000Z",
     "uidset": 4,
     "uidnext": 5,
     "uri": "imap://john.doe@example.org@kolab34.example.org/Testing;UIDVALIDITY=1426651436/;UID=4",
@@ -436,7 +448,8 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/key
         "NIL"
     ],
     "vnd.cmu.sessionId": "kolab34.example.org-12671-1426653393-1-5448614388380127124",
-    "vnd.cmu.unseenMessages": 3
+    "vnd.cmu.unseenMessages": 3,
+    "groupware_uid": "390582E807A257686D51A6BF87F342E9-A4BF5BBB9FEAA271"
 }'
 
 curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::fe0137f5-6828-474f-9cf6-fdf135123679::4::2015-03-18T04:36:34.162000Z::390582E807A257686D51A6BF87F342E9-A4BF5BBB9FEAA271" \

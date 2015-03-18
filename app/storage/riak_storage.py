@@ -230,7 +230,7 @@ class RiakStorage(AbstractStorage):
 
         if filters is not None:
             # TODO: query directly using key?
-            results = self._mapreduce_keyfilter('imap-events', filters, sortby='timestamp', limit=limit)
+            results = self._mapreduce_keyfilter('imap-events', filters, sortby='timestamp_utc', limit=limit)
             return [self._transform_result(x, 'imap-events') for x in results if x.has_key('event') and not x['event'] == 'MessageExpunge'] \
                  if results is not None else results
 
@@ -307,9 +307,9 @@ class RiakStorage(AbstractStorage):
         result['_index'] = index
 
         # derrive (numeric) revision from timestamp
-        if result.has_key('timestamp') and result.get('event','') in ['MessageAppend','MessageMove']:
+        if result.has_key('timestamp_utc') and result.get('event','') in ['MessageAppend','MessageMove']:
             try:
-                ts = parse_date(result['timestamp'])
+                ts = parse_date(result['timestamp_utc'])
                 result['revision'] = ts.strftime("%Y%m%d%H%M%S%f")[0:17]
             except:
                 pass
