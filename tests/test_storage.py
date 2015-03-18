@@ -69,9 +69,12 @@ class TestStorage(unittest.TestCase):
 
         rec = strg.get_revision(uid, mailbox, None, events[0]['revision'])
         self.assertIsInstance(rec, dict)
-        self.assertTrue(rec.has_key('message'))
         self.assertEqual(rec['event'], 'MessageAppend')
 
-        message = email.message_from_string(rec['message'].encode('utf8','replace'))
+        msgsource = strg.get_message_data(rec)
+        self.assertIsInstance(msgsource, unicode)
+
+        message = email.message_from_string(msgsource.encode('utf8','replace'))
         self.assertIsInstance(message, email.message.Message)
+        self.assertTrue(message.is_multipart())
 

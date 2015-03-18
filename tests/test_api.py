@@ -1,4 +1,4 @@
-import httplib, json, base64, hmac, hashlib
+import httplib, json, base64, hmac, hashlib, email
 from twisted.trial import unittest
 
 class TestAPI(unittest.TestCase):
@@ -163,6 +163,17 @@ class TestAPI(unittest.TestCase):
         self.assertIsInstance(rev2, dict)
         self.assertTrue(rev2.has_key('xml'))
         self.assertIn('<text>Somewhere else</text>', rev2['xml'])
+
+        msgdata = self._api_request('john.doe@example.org', 'event.rawdata',
+            uid='5A637BE7895D785671E1732356E65CC8-A4BF5BBB9FEAA271',
+            mailbox='Calendar',
+            rev=changelog['changes'][0]['rev']
+        )
+        self.assertIsInstance(msgdata, unicode)
+
+        message = email.message_from_string(msgdata.encode('utf8','replace'))
+        self.assertIsInstance(message, email.message.Message)
+        self.assertTrue(message.is_multipart())
 
     def test_006_diff(self):
         changelog = self._api_request('john.doe@example.org', 'event.changelog',
