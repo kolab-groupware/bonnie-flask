@@ -456,4 +456,138 @@ curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-ti
  -H 'Content-Type: application/json' \
  -d '{}'
 
+# recurring event
+curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::28::2015-03-18T23:45:04.227000Z" \
+ -H 'Content-Type: application/json' \
+ -d '{
+    "groupware_uid": "8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271",
+    "vnd.cmu.unseenMessages": 5,
+    "pid": 15547,
+    "uidnext": 29,
+    "uidset": "28",
+    "message": "MIME-Version: 1.0\r\nContent-Type: multipart/mixed;\r\n boundary=\"=_85186fadf09144d8f5ce9d9f011adf1b\"\r\nFrom: john.doe@example.org\r\nTo: john.doe@example.org\r\nDate: Wed, 18 Mar 2015 23:45:04 +0000\r\nX-Kolab-Type: application/x-vnd.kolab.event\r\nX-Kolab-Mime-Version: 3.0\r\nSubject: 8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271\r\nUser-Agent: Kolab 3.4/Roundcube 1.1.0\r\n\r\n--=_85186fadf09144d8f5ce9d9f011adf1b\r\nContent-Transfer-Encoding: quoted-printable\r\nContent-Type: text/plain; charset=ISO-8859-1\r\n\r\nThis is a Kolab Groupware object. To view this object you will need an emai=\r\nl client that understands the Kolab Groupware format. For a list of such em=\r\nail clients please visit http://www.kolab.org/\r\n\r\n\r\n--=_85186fadf09144d8f5ce9d9f011adf1b\r\nContent-Transfer-Encoding: 8bit\r\nContent-Type: application/calendar+xml; charset=UTF-8;\r\n name=kolab.xml\r\nContent-Disposition: attachment;\r\n filename=kolab.xml;\r\n size=2000\r\n\r\n<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n<icalendar xmlns=\"urn:ietf:params:xml:ns:icalendar-2.0\">\r\n<vcalendar><properties><prodid><text>Roundcube-libkolab-1.1 Libkolabxml-1.2</text></prodid><version><text>2.0</text></version><x-kolab-version><text>3.1.0</text></x-kolab-version></properties><components><vevent><properties><uid><text>8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271</text></uid><created><date-time>2015-03-18T23:44:40Z</date-time></created><dtstamp><date-time>2015-03-18T23:45:04Z</date-time></dtstamp><sequence><integer>1</integer></sequence><class><text>PUBLIC</text></class><dtstart><parameters><tzid><text>/kolab.org/Europe/Berlin</text></tzid></parameters><date-time>2015-03-23T21:00:00</date-time></dtstart><dtend><parameters><tzid><text>/kolab.org/Europe/Berlin</text></tzid></parameters><date-time>2015-03-23T22:00:00</date-time></dtend><rrule><recur><freq>DAILY</freq><count>5</count></recur></rrule><summary><text>New recurring</text></summary><organizer><parameters><cn><text>Doe, John</text></cn></parameters><cal-address>mailto:%3Cjohn.doe%40example.org%3E</cal-address></organizer></properties></vevent></components></vcalendar>\r\n\r\n</icalendar>\r\n\r\n--=_85186fadf09144d8f5ce9d9f011adf1b--\r\n",
+    "vnd.cmu.midset": [
+        "NIL"
+    ],
+    "event": "MessageAppend",
+    "user_id": "55475201-bdc211e4-881c96ef-f248ab46",
+    "service": "imap",
+    "bodyStructure": "((\"TEXT\" \"PLAIN\" (\"CHARSET\" \"ISO-8859-1\") NIL NIL \"QUOTED-PRINTABLE\" 206 4 NIL NIL NIL NIL)(\"APPLICATION\" \"CALENDAR+XML\" (\"CHARSET\" \"UTF-8\" \"NAME\" \"kolab.xml\") NIL NIL \"8BIT\" 2000 NIL (\"ATTACHMENT\" (\"FILENAME\" \"kolab.xml\" \"SIZE\" \"2000\")) NIL NIL) \"MIXED\" (\"BOUNDARY\" \"=_85186fadf09144d8f5ce9d9f011adf1b\") NIL NIL NIL)",
+    "modseq": 74,
+    "timestamp": "2015-03-19T00:45:04.227+01:00",
+    "timestamp_utc": "2015-03-18T23:45:04.227000Z",
+    "messageSize": 2960,
+    "user": "john.doe@example.org",
+    "vnd.cmu.envelope": "(\"Wed, 18 Mar 2015 23:45:04 +0000\" \"8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271\" ((NIL NIL \"john.doe\" \"example.org\")) ((NIL NIL \"john.doe\" \"example.org\")) ((NIL NIL \"john.doe\" \"example.org\")) ((NIL NIL \"john.doe\" \"example.org\")) NIL NIL NIL NIL)",
+    "vnd.cmu.sessionId": "kolab34.example.org-15547-1426722303-1-11305445614178890237",
+    "messages": 5,
+    "uri": "imap://john.doe@example.org@kolab34.example.org/Calendar;UIDVALIDITY=1424960330/;UID=28",
+    "headers": {
+        "X-Kolab-Type": "application/x-vnd.kolab.event",
+        "From": "john.doe@example.org",
+        "User-Agent": "Kolab 3.4/Roundcube 1.1.0",
+        "To": "john.doe@example.org",
+        "Date": "Wed, 18 Mar 2015 23:45:04 +0000",
+        "X-Kolab-Mime-Version": "3.0",
+        "MIME-Version": "1.0",
+        "Content-Type": "multipart/mixed; boundary=\"=_85186fadf09144d8f5ce9d9f011adf1b\"",
+        "Subject": "8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271"
+    },
+    "flags": [
+        "\\Recent"
+    ]
+}'
+
+curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::28::2015-03-18T23:45:04.227000Z::8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271" \
+ -H 'Content-Type: application/json' \
+ -d '{ "groupware_uid": "8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271", "history": {} }'
+
+curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::28::2015-03-18T23:45:23.272000Z" \
+ -H 'Content-Type: application/json' \
+ -d '{
+    "event": "MessageTrash",
+    "messages": 5,
+    "modseq": 78,
+    "pid": 15576,
+    "service": "imap",
+    "timestamp": "2015-03-19T00:45:23.272+01:00",
+    "timestamp_utc": "2015-03-18T23:45:23.272000Z",
+    "uidnext": 30,
+    "uidset": "28",
+    "uri": "imap://john.doe@example.org@kolab34.example.org/Calendar;UIDVALIDITY=1424960330",
+    "user": "john.doe@example.org",
+    "user_id": "55475201-bdc211e4-881c96ef-f248ab46",
+    "vnd.cmu.midset": [
+        "NIL"
+    ],
+    "vnd.cmu.sessionId": "kolab34.example.org-15576-1426722323-1-11062678454479138180",
+    "vnd.cmu.unseenMessages": 5
+}'
+
+curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::28::2015-03-18T23:45:23.283000Z" \
+ -H 'Content-Type: application/json' \
+ -d '{
+    "event": "MessageExpunge",
+    "messages": 4,
+    "modseq": 79,
+    "pid": 15576,
+    "service": "imap",
+    "timestamp": "2015-03-19T00:45:23.283+01:00",
+    "timestamp_utc": "2015-03-18T23:45:23.283000Z",
+    "uidnext": 30,
+    "uidset": "28",
+    "uri": "imap://john.doe@example.org@kolab34.example.org/Calendar;UIDVALIDITY=1424960330",
+    "user": "john.doe@example.org",
+    "user_id": "55475201-bdc211e4-881c96ef-f248ab46",
+    "vnd.cmu.midset": [
+        "NIL"
+    ],
+    "vnd.cmu.sessionId": "kolab34.example.org-15576-1426722323-1-11062678454479138180",
+    "vnd.cmu.unseenMessages": 4
+}'
+
+curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-events/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::29::2015-03-18T23:45:23.247000Z" \
+ -H 'Content-Type: application/json' \
+ -d '{
+    "groupware_uid": "8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271",
+    "vnd.cmu.unseenMessages": 5,
+    "pid": 15576,
+    "uidnext": 30,
+    "uidset": "29",
+    "message": "MIME-Version: 1.0\r\nContent-Type: multipart/mixed;\r\n boundary=\"=_6c2c9a7cb5b873e10503d67442bef9c0\"\r\nFrom: john.doe@example.org\r\nTo: john.doe@example.org\r\nDate: Wed, 18 Mar 2015 23:45:23 +0000\r\nX-Kolab-Type: application/x-vnd.kolab.event\r\nX-Kolab-Mime-Version: 3.0\r\nSubject: 8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271\r\nUser-Agent: Kolab 3.4/Roundcube 1.1.0\r\n\r\n--=_6c2c9a7cb5b873e10503d67442bef9c0\r\nContent-Transfer-Encoding: quoted-printable\r\nContent-Type: text/plain; charset=ISO-8859-1\r\n\r\nThis is a Kolab Groupware object. To view this object you will need an emai=\r\nl client that understands the Kolab Groupware format. For a list of such em=\r\nail clients please visit http://www.kolab.org/\r\n\r\n\r\n--=_6c2c9a7cb5b873e10503d67442bef9c0\r\nContent-Transfer-Encoding: 8bit\r\nContent-Type: application/calendar+xml; charset=UTF-8;\r\n name=kolab.xml\r\nContent-Disposition: attachment;\r\n filename=kolab.xml;\r\n size=3644\r\n\r\n<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\r\n<icalendar xmlns=\"urn:ietf:params:xml:ns:icalendar-2.0\">\r\n<vcalendar><properties><prodid><text>Roundcube-libkolab-1.1 Libkolabxml-1.2</text></prodid><version><text>2.0</text></version><x-kolab-version><text>3.1.0</text></x-kolab-version></properties><components><vevent><properties><uid><text>8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271</text></uid><created><date-time>2015-03-18T23:44:40Z</date-time></created><dtstamp><date-time>2015-03-18T23:45:23Z</date-time></dtstamp><sequence><integer>1</integer></sequence><class><text>PUBLIC</text></class><dtstart><parameters><tzid><text>/kolab.org/Europe/Berlin</text></tzid></parameters><date-time>2015-03-23T21:00:00</date-time></dtstart><dtend><parameters><tzid><text>/kolab.org/Europe/Berlin</text></tzid></parameters><date-time>2015-03-23T22:00:00</date-time></dtend><rrule><recur><freq>DAILY</freq><count>5</count></recur></rrule><summary><text>New recurring</text></summary><organizer><parameters><cn><text>Doe, John</text></cn></parameters><cal-address>mailto:%3Cjohn.doe%40example.org%3E</cal-address></organizer></properties></vevent><vevent><properties><uid><text>8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271</text></uid><created><date-time>2015-03-18T23:44:40Z</date-time></created><dtstamp><date-time>2015-03-18T23:45:23Z</date-time></dtstamp><sequence><integer>2</integer></sequence><class><text>PUBLIC</text></class><dtstart><parameters><tzid><text>/kolab.org/Europe/Berlin</text></tzid></parameters><date-time>2015-03-25T20:00:00</date-time></dtstart><dtend><parameters><tzid><text>/kolab.org/Europe/Berlin</text></tzid></parameters><date-time>2015-03-25T21:00:00</date-time></dtend><recurrence-id><parameters><tzid><text>/kolab.org/Europe/Berlin</text></tzid></parameters><date-time>2015-03-25T21:00:00</date-time></recurrence-id><summary><text>New recurring</text></summary><organizer><parameters><cn><text>Doe, John</text></cn></parameters><cal-address>mailto:%3Cjohn.doe%40example.org%3E</cal-address></organizer></properties></vevent></components></vcalendar>\r\n\r\n</icalendar>\r\n\r\n--=_6c2c9a7cb5b873e10503d67442bef9c0--\r\n",
+    "vnd.cmu.midset": [
+        "NIL"
+    ],
+    "event": "MessageAppend",
+    "user_id": "55475201-bdc211e4-881c96ef-f248ab46",
+    "service": "imap",
+    "bodyStructure": "((\"TEXT\" \"PLAIN\" (\"CHARSET\" \"ISO-8859-1\") NIL NIL \"QUOTED-PRINTABLE\" 206 4 NIL NIL NIL NIL)(\"APPLICATION\" \"CALENDAR+XML\" (\"CHARSET\" \"UTF-8\" \"NAME\" \"kolab.xml\") NIL NIL \"8BIT\" 2000 NIL (\"ATTACHMENT\" (\"FILENAME\" \"kolab.xml\" \"SIZE\" \"2000\")) NIL NIL) \"MIXED\" (\"BOUNDARY\" \"=_85186fadf09144d8f5ce9d9f011adf1b\") NIL NIL NIL)",
+    "modseq": 76,
+    "timestamp": "2015-03-19T00:45:23.247+01:00",
+    "timestamp_utc": "2015-03-18T23:45:23.247000Z",
+    "messageSize": 3141,
+    "user": "john.doe@example.org",
+    "vnd.cmu.envelope": "(\"Wed, 18 Mar 2015 23:45:23 +0000\" \"8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271\" ((NIL NIL \"john.doe\" \"example.org\")) ((NIL NIL \"john.doe\" \"example.org\")) ((NIL NIL \"john.doe\" \"example.org\")) ((NIL NIL \"john.doe\" \"example.org\")) NIL NIL NIL NIL)",
+    "vnd.cmu.sessionId": "kolab34.example.org-15576-1426722323-1-11062678454479138180",
+    "messages": 5,
+    "uri": "imap://john.doe@example.org@kolab34.example.org/Calendar;UIDVALIDITY=1424960330/;UID=29",
+    "headers": {
+        "X-Kolab-Type": "application/x-vnd.kolab.event",
+        "From": "john.doe@example.org",
+        "User-Agent": "Kolab 3.4/Roundcube 1.1.0",
+        "To": "john.doe@example.org",
+        "Date": "Wed, 18 Mar 2015 23:45:23 +0000",
+        "X-Kolab-Mime-Version": "3.0",
+        "MIME-Version": "1.0",
+        "Content-Type": "multipart/mixed; boundary=\"=_6c2c9a7cb5b873e10503d67442bef9c0\"",
+        "Subject": "8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271"
+    },
+    "flags": [
+        "\\Recent"
+    ]
+}'
+
+curl -XPUT "http://$RIAK_HOST:$RIAK_PORT/types/egara-lww/buckets/imap-message-timeline/keys/message::a5660caa-3165-4a84-bacd-ef4b58ef3663::29::2015-03-18T23:45:23.247000Z::8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271" \
+ -H 'Content-Type: application/json' \
+ -d '{ "groupware_uid": "8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271", "history": {} }'
 
