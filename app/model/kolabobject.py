@@ -145,15 +145,26 @@ class KolabObject(object):
                 except:
                     raise ValueError("Invalid isntance identifier %r" % (instance))
 
-            old = old.get_instance(recurrence_date)
-            if old == None:
+            _old = old.get_instance(recurrence_date)
+            if _old == None:
                 raise ValueError("Object instance %s-%s @rev:%s not found" % (uid, instance, str(rev_old)))
 
-            new = new.get_instance(recurrence_date)
-            if new == None:
+            old_dict = _old.to_dict()
+            old_dict['recurrence'] = old.get_recurrence().to_dict()
+
+            _new = new.get_instance(recurrence_date)
+            if _new == None:
                 raise ValueError("Object instance %s-%s @rev:%s not found" % (uid, instance, str(rev_new)))
 
-        result = dict(uid=uid, rev=rev_new, changes=convert2primitives(compute_diff(old.to_dict(), new.to_dict(), False)))
+            new_dict = _new.to_dict()
+            new_dict['recurrence'] = new.get_recurrence().to_dict()
+
+        else:
+            old_dict = old.to_dict()
+            new_dict = new.to_dict()
+
+        # compute diff and compose result
+        result = dict(uid=uid, rev=rev_new, changes=convert2primitives(compute_diff(old_dict, new_dict, False)))
 
         if instance is not None:
             result['instance'] = instance
