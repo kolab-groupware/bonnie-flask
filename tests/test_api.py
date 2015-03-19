@@ -186,7 +186,7 @@ class TestAPI(unittest.TestCase):
         rev2 = changelog['changes'][1]['rev']
 
         diff = self._api_request('john.doe@example.org', 'event.diff',
-            uid='5A637BE7895D785671E1732356E65CC8-A4BF5BBB9FEAA271',
+            uid=changelog['uid'],
             mailbox='Calendar',
             rev1=rev1,
             rev2=rev2
@@ -197,4 +197,44 @@ class TestAPI(unittest.TestCase):
         self.assertTrue(diff.has_key('uid'))
         self.assertEqual(len(diff['changes']), 6)
 
-        
+    def test_007_diff_instance(self):
+        changelog = self._api_request('john.doe@example.org', 'event.changelog',
+            uid='8B3B2C54C5218FC09EBC840E6289F5E5-A4BF5BBB9FEAA271',
+            mailbox='Calendar'
+        )
+        self.assertIsInstance(changelog, dict)
+        self.assertEqual(len(changelog.get('changes', [])), 2)
+
+        rev1 = changelog['changes'][0]['rev']
+        rev2 = changelog['changes'][1]['rev']
+
+        diff = self._api_request('john.doe@example.org', 'event.diff',
+            uid=changelog['uid'],
+            mailbox='Calendar',
+            rev1=rev1,
+            rev2=rev2,
+            instance='20150324T210000'
+        )
+        self.assertIsInstance(diff, dict)
+        self.assertTrue(diff.has_key('instance'))
+        self.assertEqual(len(diff['changes']), 1)  # no change (except lastmodified-date) in this instance
+
+        diff = self._api_request('john.doe@example.org', 'event.diff',
+            uid=changelog['uid'],
+            mailbox='Calendar',
+            rev1=rev1,
+            rev2=rev2,
+            instance='20150325T210000'
+        )
+        self.assertIsInstance(diff, dict)
+        self.assertEqual(len(diff['changes']), 4) # changes for start,end,sequence,lastmodified-date
+
+        diff = self._api_request('john.doe@example.org', 'event.diff',
+            uid=changelog['uid'],
+            mailbox='Calendar',
+            rev1=rev1,
+            rev2=rev2,
+            instance='20150330T210000'
+        )
+        self.assertFalse(diff)
+        self.assertRPCError(-32603)  # report error for invalid instance

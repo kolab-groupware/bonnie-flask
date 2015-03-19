@@ -153,7 +153,12 @@ class KolabObject(object):
             if new == None:
                 raise ValueError("Object instance %s-%s @rev:%s not found" % (uid, instance, str(rev_new)))
 
-        return dict(uid=uid, rev=rev_new, changes=convert2primitives(compute_diff(old.to_dict(), new.to_dict(), False)))
+        result = dict(uid=uid, rev=rev_new, changes=convert2primitives(compute_diff(old.to_dict(), new.to_dict(), False)))
+
+        if instance is not None:
+            result['instance'] = instance
+
+        return result
 
     def rawdata(self, uid, mailbox, rev, msguid=None):
         """
