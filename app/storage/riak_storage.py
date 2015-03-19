@@ -23,6 +23,7 @@ import logging, datetime, urllib, urlparse
 from riak import RiakClient
 from riak.mapreduce import RiakKeyFilter, RiakMapReduce
 from dateutil.parser import parse as parse_date
+from caching import CachedDict
 from flask import current_app
 from . import AbstractStorage
 
@@ -50,6 +51,7 @@ class RiakStorage(AbstractStorage):
             http_port=conf['STORAGE'].get('riak_port', riak_port)
         )
         self.client.set_decoder('application/octet-stream', self._decode_binary)
+        self.users_cache = CachedDict(ttl=10)
 
     def _decode_binary(self, data):
         return str(data).encode("utf-8")
@@ -170,20 +172,28 @@ class RiakStorage(AbstractStorage):
         """
             API for resolving usernames and reading user info
         """
+        cache_key = id or username
+
+        # check for cached result
+        self.users_cache.expunge()
+        if cache_key and self.users_cache.has_key(cache_key):
+            log.debug("get_user: return cached value for %r", cache_key)
+            return self.users_cache[cache_key]
+
         # search by ID using a key filter
         if id is not None:
             results = self._get_keyfilter('users', starts_with=id + '::', limit=1)
             if results and len(results) > 0:
+                self.users_cache[cache_key] = results[0]
                 return results[0]
 
         elif username is not None:
             user = self.get(username, 'users-current')
             if user is not None:
+                self.users_cache[cache_key] = user
                 return user
 
             # TODO: query 'users' bucket with an ends_with key filter
-
-        # TODO: add a very short-term cache for lookups by ID
 
         return None
 
@@ -229,7 +239,6 @@ class RiakStorage(AbstractStorage):
         log.debug("Querying imap-events for keys %r", object_event_keys)
 
         if filters is not None:
-            # TODO: query directly using key?
             results = self._mapreduce_keyfilter('imap-events', filters, sortby='timestamp_utc', limit=limit)
             return [self._transform_result(x, 'imap-events') for x in results if x.has_key('event') and not x['event'] == 'MessageExpunge'] \
                  if results is not None else results

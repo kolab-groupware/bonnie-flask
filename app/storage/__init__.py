@@ -137,3 +137,7 @@ def factory():
         return RiakStorage()
 
     raise StorageException("Invalid backend %r specified" % (backend))
+
+
+# create singleton instance
+instance = factory()

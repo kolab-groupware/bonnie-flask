@@ -27,7 +27,6 @@ from dateutil.parser import parse as parse_date
 from pykolab.xml.utils import compute_diff
 from collections import OrderedDict
 from email import message_from_string
-from app import storage
 
 log = logging.getLogger('model')
 
@@ -40,10 +39,11 @@ class KolabObject(object):
 
     def __init__(self, env={}):
         from flask import current_app
+        from app.storage import instance as storage_instance
 
         self.env = env
         self.config = current_app.config
-        self.storage = storage.factory()
+        self.storage = storage_instance
 
     def created(self, uid, mailbox, msguid=None):
         """
