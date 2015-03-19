@@ -332,6 +332,9 @@ class RiakStorage(AbstractStorage):
 
             result['mailbox'] = folder_path
 
+            if not result.has_key('uidset') and uri.has_key('UID'):
+                result['uidset'] = uri['UID']
+
         return result
 
     def _parse_imap_uri(self, uri):
