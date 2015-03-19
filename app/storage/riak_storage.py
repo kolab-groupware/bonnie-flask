@@ -76,7 +76,7 @@ class RiakStorage(AbstractStorage):
                 result = res.data
 
         except Exception, e:
-            log.warning("Riak exception: %r", e)
+            log.warning("Riak exception: %s", str(e))
             result = None
 
         return result
@@ -97,7 +97,7 @@ class RiakStorage(AbstractStorage):
             pass
 
         except Exception, e:
-            log.warning("Riak exception: %r", e)
+            log.warning("Riak exception: %s", str(e))
             result = None
 
         return result
@@ -161,7 +161,7 @@ class RiakStorage(AbstractStorage):
             results = mapred.run()
 
         except Exception, e:
-            log.warning("Riak MapReduce exception: %r", e)
+            log.warning("Riak MapReduce exception: %s", str(e))
             results = None
 
         return results
