@@ -141,7 +141,7 @@ class KolabObject(object):
                 recurrence_date = datetime.datetime.strptime(str(instance), "%Y%m%dT%H%M%S")
             except:
                 try:
-                    recurrence_date = datetime.date.strptime(str(instance), "%Y%m%d").date()
+                    recurrence_date = datetime.datetime.strptime(str(instance), "%Y%m%d").date()
                 except:
                     raise ValueError("Invalid isntance identifier %r" % (instance))
 
