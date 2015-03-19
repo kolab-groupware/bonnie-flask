@@ -29,7 +29,7 @@ from collections import OrderedDict
 from email import message_from_string
 from app import storage
 
-log = logging.getLogger('model.kolabobject')
+log = logging.getLogger('model')
 
 class KolabObject(object):
     """
@@ -115,7 +115,7 @@ class KolabObject(object):
 
         return obj
 
-    def diff(self, uid, rev1, rev2, mailbox, msguid=None):
+    def diff(self, uid, rev1, rev2, mailbox, msguid=None, instance=None):
         """
             Compare two revisions of an object and return a list of property changes
         """
@@ -127,11 +127,31 @@ class KolabObject(object):
 
         old = self._get(uid, mailbox, msguid, rev_old)
         if old == False:
-            raise ValueError("Object %s @rev:%d not found" % (uid, rev_old))
+            raise ValueError("Object %s @rev:%s not found" % (uid, str(rev_old)))
 
         new = self._get(uid, mailbox, msguid, rev_new)
         if new == False:
-            raise ValueError("Object %s @rev:%d not found" % (uid, rev_new))
+            raise ValueError("Object %s @rev:%s not found" % (uid, str(rev_new)))
+
+        # compute diff for the requested recurrence instance
+        if instance is not None and hasattr(old, 'get_instance') and hasattr(new, 'get_instance'):
+            log.debug("Get recurrence instance %s for object %s", instance, uid)
+
+            try:
+                recurrence_date = datetime.datetime.strptime(str(instance), "%Y%m%dT%H%M%S")
+            except:
+                try:
+                    recurrence_date = datetime.date.strptime(str(instance), "%Y%m%d").date()
+                except:
+                    raise ValueError("Invalid isntance identifier %r" % (instance))
+
+            old = old.get_instance(recurrence_date)
+            if old == None:
+                raise ValueError("Object instance %s-%s @rev:%s not found" % (uid, instance, str(rev_old)))
+
+            new = new.get_instance(recurrence_date)
+            if new == None:
+                raise ValueError("Object instance %s-%s @rev:%s not found" % (uid, instance, str(rev_new)))
 
         return dict(uid=uid, rev=rev_new, changes=convert2primitives(compute_diff(old.to_dict(), new.to_dict(), False)))
 
