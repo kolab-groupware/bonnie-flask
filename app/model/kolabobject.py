@@ -209,30 +209,33 @@ class KolabObject(object):
         result = []
 
         if eventlog is not None:
-            for log in eventlog:
+            for _log in eventlog:
                 # filter MessageTrash following a MessageAppend event (which is an update operation)
-                if log['event'] == 'MessageTrash' and last_append_uid > int(log['uidset']):
+                if _log['event'] == 'MessageTrash' and last_append_uid > int(_log['uidset']):
                     continue
 
                 # remember last appended message uid
-                if log['event'] == 'MessageAppend' and log.has_key('uidset'):
-                    last_append_uid = int(log['uidset'])
+                if _log['event'] == 'MessageAppend' and _log.has_key('uidset'):
+                    last_append_uid = int(_log['uidset'])
 
                 # compose log entry to return
                 logentry = {
-                    'rev': log.get('revision', None),
-                    'op': event_op_map.get(log['event'], 'UNKNOWN'),
-                    'mailbox': self._convert_mailbox_uri(log.get('mailbox', None))
+                    'rev': _log.get('revision', None),
+                    'op': event_op_map.get(_log['event'], 'UNKNOWN'),
+                    'mailbox': self._convert_mailbox_uri(_log.get('mailbox', None))
                 }
                 try:
-                    timestamp = parse_date(log['timestamp'])
-                    logentry['date'] = datetime.datetime.strftime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-                except:
-                    logentry['date'] = log['timestamp']
+                    timestamp = parse_date(_log['timestamp_utc'])
+                    logentry['date'] = timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")
+                except Exception, e:
+                    try:
+                        timestamp = parse_date(_log['timestamp'])
+                        logentry['date'] = timestamp.astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    except Exception, e:
+                        log.warning("Failed to parse timestamp %r: %r", _log['timestamp'], str(e))
+                        logentry['date'] = _log['timestamp']
 
-                # TODO: translate mailbox identifier back to a relative folder path?
-
-                logentry['user'] = self._get_user_info(log)
+                logentry['user'] = self._get_user_info(_log)
 
                 result.append(logentry)
 
