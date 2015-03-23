@@ -18,7 +18,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import logging, datetime, urllib, urlparse
+import logging, datetime, urllib, urlparse, time
 
 from riak import RiakClient
 from riak.mapreduce import RiakKeyFilter, RiakMapReduce
@@ -29,6 +29,8 @@ from . import AbstractStorage
 
 conf = current_app.config
 log = logging.getLogger('storage')
+
+current_time_ms = lambda: int(round(time.time() * 1000))
 
 class RiakStorage(AbstractStorage):
 
@@ -218,7 +220,7 @@ class RiakStorage(AbstractStorage):
             log.info("Folder %r not found in storage", mailbox)
             return None;
 
-        object_event_keys = self._get_timeline_keys(objuid, folder['id'])
+        object_event_keys = self._get_timeline_keys(objuid, folder['id'], length=4)
 
         # sanity check with msguid
         if msguid is not None:
@@ -228,6 +230,21 @@ class RiakStorage(AbstractStorage):
                 # TODO: abort?
 
         # 3. read each corresponding entry from imap-events
+        _start = current_time_ms()
+        log.debug("Querying imap-events for keys %r", object_event_keys)
+
+        results = []
+        for key in object_event_keys:
+            _result = self.get(key, 'imap-events')
+            if _result is not None:
+                results.append(_result)
+
+        # 4. sort results ascending by their timestamp
+        results.sort(lambda a,b: 1 if a.get('timestamp_utc', 0) > b.get('timestamp_utc', 0) else -1)
+        log.debug("Got %d events in %d ms", len(results), current_time_ms() - _start)
+
+        """
+        # use keyfilters combined with OR (slower than direct get() calls)
         filters = None
         for key in object_event_keys:
             f = RiakKeyFilter().starts_with(key)
@@ -236,14 +253,13 @@ class RiakStorage(AbstractStorage):
             else:
                 filters |= f
 
-        log.debug("Querying imap-events for keys %r", object_event_keys)
-
         if filters is not None:
             results = self._mapreduce_keyfilter('imap-events', filters, sortby='timestamp_utc', limit=limit)
-            return [self._transform_result(x, 'imap-events') for x in results if x.has_key('event') and not x['event'] == 'MessageExpunge'] \
-                 if results is not None else results
+            log.debug("Done in %d ms", current_time_ms() - _start)
+        """
 
-        return None
+        return [self._transform_result(x, 'imap-events') for x in results if x.has_key('event') and not x['event'] == 'MessageExpunge'] \
+             if results is not None else results
 
     def _get_timeline_keys(self, objuid, folder_id, length=3):
         """
