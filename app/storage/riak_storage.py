@@ -220,7 +220,7 @@ class RiakStorage(AbstractStorage):
             log.info("Folder %r not found in storage", mailbox)
             return None;
 
-        object_event_keys = self._get_timeline_keys(objuid, folder['id'], length=4)
+        object_event_keys = self._get_timeline_keys(objuid, folder['id'], length=3)
 
         # sanity check with msguid
         if msguid is not None:
@@ -233,17 +233,6 @@ class RiakStorage(AbstractStorage):
         _start = current_time_ms()
         log.debug("Querying imap-events for keys %r", object_event_keys)
 
-        results = []
-        for key in object_event_keys:
-            _result = self.get(key, 'imap-events')
-            if _result is not None:
-                results.append(_result)
-
-        # 4. sort results ascending by their timestamp
-        results.sort(lambda a,b: 1 if a.get('timestamp_utc', 0) > b.get('timestamp_utc', 0) else -1)
-        log.debug("Got %d events in %d ms", len(results), current_time_ms() - _start)
-
-        """
         # use keyfilters combined with OR (slower than direct get() calls)
         filters = None
         for key in object_event_keys:
@@ -256,7 +245,6 @@ class RiakStorage(AbstractStorage):
         if filters is not None:
             results = self._mapreduce_keyfilter('imap-events', filters, sortby='timestamp_utc', limit=limit)
             log.debug("Done in %d ms", current_time_ms() - _start)
-        """
 
         return [self._transform_result(x, 'imap-events') for x in results if x.has_key('event') and not x['event'] == 'MessageExpunge'] \
              if results is not None else results
