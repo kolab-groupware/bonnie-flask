@@ -234,6 +234,7 @@ class RiakStorage(AbstractStorage):
         log.debug("Querying imap-events for keys %r", object_event_keys)
 
         # use keyfilters combined with OR (slower than direct get() calls)
+        results = None
         filters = None
         for key in object_event_keys:
             f = RiakKeyFilter().starts_with(key)
