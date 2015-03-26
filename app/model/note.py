@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright 2014 Kolab Systems AG (http://www.kolabsys.com)
+# Copyright 2015 Kolab Systems AG (http://www.kolabsys.com)
 #
 # Thomas Bruederli <bruederli at kolabsys.com>
 #
@@ -18,34 +18,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from event import Event
-from task import Task
-from note import Note
-from system import System
-from user import User, Permission, AnonymousUser
+from kolabobject import KolabObject
+from pykolab.xml import note_from_message
 
-__all__ = [
-    'System',
-    'Event',
-    'Task',
-    'Note',
-    'User',
-    'Permission',
-    'AnonymousUser',
-]
-
-__class_map__ = {
-    'event': Event,
-    'task': Task,
-    'note': Note,
-    'system': System,
-}
-
-def get_instance(classname, **kw):
+class Note(KolabObject):
     """
-        Returns an instance of the given model class
+        Model class for accessing Kolab Groupware Note objects
     """
-    if __class_map__.has_key(classname):
-        return __class_map__[classname](**kw)
 
-    return None
+    def __init__(self, *args, **kw):
+        KolabObject.__init__(self, *args, **kw)
+        self.folder_type = 'note'
+        self.x_kolab_type = 'application/x-vnd.kolab.note'
+
+    def _object_from_message(self, message):
+        return note_from_message(message)
